@@ -1,18 +1,24 @@
-# 📊 Automated EDA Tool
+# 📊 Automated EDA & Data Validation Tool
 
-A Streamlit-based web application for automated Exploratory Data Analysis (EDA). Upload your CSV or Excel files and get instant insights with interactive visualizations and statistical summaries.
+A comprehensive Python tool for automated Exploratory Data Analysis (EDA) and data quality validation. Features both a Streamlit web interface and a powerful command-line validation pipeline with risk assessment.
 
 ## ✨ Features
 
-- **📁 File Upload**: Support for CSV and Excel (.xlsx, .xls) files
-- **📊 Dataset Overview**: Quick metrics showing rows, columns, and duplicates
-- **📈 Summary Statistics**: Comprehensive statistical analysis for all numeric columns
-- **🔍 Data Quality Check**: 
-  - Missing values detection
-  - Data type information
-  - Duplicate row identification
-- **🔥 Correlation Heatmap**: Visual representation of correlations between numeric features
-- **💾 Export Reports**: Generate and download detailed Excel reports with multiple sheets
+### 🎯 Two Ways to Use:
+
+#### 1. **Streamlit Web App** (Interactive EDA)
+- **📁 File Upload**: Support for CSV and Excel files
+- **📊 Dataset Overview**: Quick metrics and data preview
+- **📈 Summary Statistics**: Comprehensive statistical analysis
+- **🔥 Correlation Heatmap**: Visual correlation analysis
+- **💾 Export Reports**: Download Excel reports
+
+#### 2. **Validation Pipeline** (Data Quality & Risk Assessment)
+- **🔍 Comprehensive Validation**: 8 different data quality checks
+- **⚠️ Risk Scoring**: Automated risk assessment (0-100 scale)
+- **📊 Multiple Reports**: CSV, Excel, HTML, and text summaries
+- **🎯 Smart Recommendations**: Actionable insights to fix issues
+- **📈 Detailed Analysis**: Missing values, duplicates, outliers, data types, dates, and more
 
 ## 🚀 Installation
 
@@ -59,78 +65,206 @@ A Streamlit-based web application for automated Exploratory Data Analysis (EDA).
 
 ## 🎯 Usage
 
-1. **Start the application**:
-   ```bash
-   streamlit run app.py
-   ```
+### Option 1: Enhanced Streamlit Web App (Interactive)
 
-2. **Open your browser** to `http://localhost:8501` (opens automatically)
+**New!** The Streamlit app now has 3 powerful modes:
 
-3. **Upload your data**:
-   - Click "Browse files" or drag-and-drop
-   - Select a CSV or Excel file
+```bash
+streamlit run app.py
+```
 
-4. **Explore your data**:
-   - View dataset overview and preview
-   - Check summary statistics
-   - Identify data quality issues
-   - Analyze correlations with the heatmap
+Then choose your analysis mode:
+1. **📈 Quick EDA** - Fast data exploration with visualizations
+2. **🔍 Data Validation** - Comprehensive quality checks with risk scoring
+3. **📊 Complete Analysis** - Combined EDA + Validation in one view
 
-5. **Export results**:
-   - Click "Generate Excel Report"
-   - Download the comprehensive Excel file with multiple analysis sheets
+**Features**:
+- ✨ Color-coded risk assessment
+- ✨ Interactive issue explorer with filters
+- ✨ Visual dashboards and charts
+- ✨ One-click report downloads
+- ✨ Smart recommendations
+- ✨ Professional UI
+
+See [STREAMLIT_GUIDE.md](STREAMLIT_GUIDE.md) for detailed instructions.
+
+### Option 2: Validation Pipeline (Data Quality Assessment)
+
+#### Quick Start - Single Command:
+```bash
+python run_validation.py your_data.csv
+```
+
+That's it! This will:
+- Load your data
+- Run 8 validation checks
+- Calculate risk score
+- Generate 4 different reports
+
+#### Advanced Usage:
+```python
+from src import DataLoader, DataValidator, RiskEngine, ReportGenerator
+
+# Load data
+loader = DataLoader("data.csv", source_type="csv")
+df = loader.load()
+
+# Run validations
+validator = DataValidator(df)
+issues = validator.run_all_validations()
+
+# Calculate risk
+risk_engine = RiskEngine()
+risk_score = risk_engine.calculate_risk(issues, df)
+
+# Generate reports
+reporter = ReportGenerator(df, issues, risk_score)
+reporter.generate_all_reports()
+```
+
+#### What Gets Checked:
+1. ✅ **Missing Values** - Column and row level analysis
+2. ✅ **Duplicates** - Full row and key column duplicates
+3. ✅ **Data Types** - Type validation and suggestions
+4. ✅ **Date Formats** - Invalid date detection
+5. ✅ **Outliers** - Statistical outlier detection
+6. ✅ **Required Columns** - Ensure critical columns exist
+7. ✅ **Value Ranges** - Min/max validation
+8. ✅ **Risk Scoring** - Overall data quality assessment
 
 ## 📂 Project Structure
 
 ```
-DataPrpject/
-├── app.py              # Streamlit web interface
-├── main.py             # Core EDA logic (AutomatedEDA class)
-├── requirements.txt    # Package dependencies
-└── README.md           # This file
+EDA_Automation/
+├── app.py                      # Streamlit web interface
+├── main.py                     # Core EDA logic (AutomatedEDA class)
+├── run_validation.py           # Main validation pipeline script
+├── requirements.txt            # Package dependencies
+├── config/
+│   └── rules.json             # Validation rules and thresholds
+├── src/                       # Core validation modules
+│   ├── __init__.py           # Package initialization
+│   ├── data_loader.py        # Data loading from CSV/Excel/SQL
+│   ├── validators.py         # All validation checks
+│   ├── risk_engine.py        # Risk scoring and assessment
+│   └── report_generator.py   # Report generation (CSV/Excel/HTML)
+├── outputs/                   # Generated reports (auto-created)
+│   ├── validation_report.csv
+│   ├── validation_report.xlsx
+│   ├── validation_report.html
+│   └── risk_summary.txt
+└── README.md                  # This file
 ```
 
 ## 🔧 Features Breakdown
 
-### AutomatedEDA Class (main.py)
+### 1. Data Loader (`src/data_loader.py`)
+Load data from multiple sources:
+```python
+from src import DataLoader
 
-The core class supports three data source types:
+# CSV
+loader = DataLoader("data.csv", source_type="csv")
 
-- **CSV files**: `source_type='csv'`
-- **Excel files**: `source_type='excel'`
-- **SQL databases**: `source_type='sql'` (with connection string)
+# Excel (with sheet selection)
+loader = DataLoader("data.xlsx", source_type="excel", sheet_name="Sales")
 
-### Available Methods
+# SQL
+loader = DataLoader("users", source_type="sql", 
+                   sql_connection_string="postgresql://localhost/db")
 
+df = loader.load()
+```
+
+### 2. Data Validator (`src/validators.py`)
+Run comprehensive validation checks:
+```python
+from src import DataValidator
+
+validator = DataValidator(df, config_path="config/rules.json")
+issues = validator.run_all_validations()
+
+# Or run specific checks
+validator.check_missing_values_column()
+validator.check_duplicates(key_columns=['id'])
+validator.check_date_formats(date_columns=['created_at'])
+validator.check_outliers()
+```
+
+### 3. Risk Engine (`src/risk_engine.py`)
+Calculate data quality risk:
+```python
+from src import RiskEngine
+
+risk_engine = RiskEngine()
+risk_score = risk_engine.calculate_risk(issues, df)
+
+print(f"Risk Level: {risk_score.risk_level}")  # LOW, MEDIUM, HIGH, CRITICAL
+print(f"Risk Score: {risk_score.total_score}/100")
+print(risk_score.recommendations)
+```
+
+### 4. Report Generator (`src/report_generator.py`)
+Generate beautiful reports:
+```python
+from src import ReportGenerator
+
+reporter = ReportGenerator(df, issues, risk_score)
+
+# Generate specific report types
+reporter.generate_csv_report()
+reporter.generate_excel_report()
+reporter.generate_html_report()  # Opens in browser
+reporter.print_console_summary()
+
+# Or generate all at once
+reporter.generate_all_reports(output_dir="outputs")
+```
+
+### 5. Streamlit App (Classic EDA)
 ```python
 from main import AutomatedEDA
 
-# Create instance
 eda = AutomatedEDA(data_source="data.csv", source_type="csv")
-
-# Load data
 df = eda.load_data()
-
-# Display basic statistics
 eda.basic_stats()
-
-# Check data quality
 eda.data_quality_check()
-
-# Create visualizations
 eda.visualize(save_plots=True)
-
-# Export summary report
 eda.export_summary(excel_path="report.xlsx")
 ```
 
-## 📊 Excel Report Contents
+## 📊 Report Outputs
 
-The generated Excel report includes:
+### Validation Reports Include:
 
-1. **Numeric_Summary**: Descriptive statistics for all numeric columns
-2. **[Column]_Counts**: Value counts for each categorical column (sanitized names)
-3. **Missing_Values**: Count of missing values per column
+#### 1. **CSV Report** (`validation_report.csv`)
+Simple tabular format with all issues
+
+#### 2. **Excel Report** (`validation_report.xlsx`)
+Multi-sheet workbook:
+- **Summary**: Overview of dataset and issues
+- **Issues**: Detailed list of all problems found
+- **Data Overview**: Column-by-column analysis
+- **Recommendations**: Prioritized action items
+
+#### 3. **HTML Report** (`validation_report.html`)
+Beautiful, styled report with:
+- Visual metrics dashboard
+- Color-coded severity levels
+- Interactive tables
+- Risk assessment summary
+
+#### 4. **Risk Summary** (`risk_summary.txt`)
+Text-based risk assessment with:
+- Overall risk score and level
+- Issue breakdown by severity
+- Detailed recommendations
+- Full issue listing
+
+### Classic EDA Report (Streamlit/main.py):
+1. **Numeric_Summary**: Descriptive statistics
+2. **[Column]_Counts**: Value counts for categorical columns
+3. **Missing_Values**: Missing data analysis
 
 ## 🛠️ Troubleshooting
 
@@ -162,7 +296,42 @@ You can easily customize the tool by modifying:
 
 ## 💡 Usage Examples
 
-### Analyze a CSV file
+### Example 1: Quick Validation
+```bash
+# Validate any CSV file
+python run_validation.py sales_data.csv
+
+# Validate Excel file
+python run_validation.py customer_data.xlsx excel
+```
+
+### Example 2: Custom Validation with Python
+```python
+from src import DataLoader, DataValidator, RiskEngine, ReportGenerator
+
+# Load data
+loader = DataLoader("sales_data.csv", source_type="csv")
+df = loader.load()
+
+# Run specific validations
+validator = DataValidator(df)
+validator.check_missing_values_column()
+validator.check_duplicates(key_columns=['order_id'])
+validator.check_value_ranges({'age': {'min': 0, 'max': 120}})
+
+# Get issues
+issues = validator.issues
+
+# Calculate risk
+risk_engine = RiskEngine()
+risk_score = risk_engine.calculate_risk(issues, df)
+
+# Generate reports
+reporter = ReportGenerator(df, issues, risk_score)
+reporter.generate_html_report()  # Beautiful HTML report
+```
+
+### Example 3: Classic EDA with Streamlit
 ```python
 from main import AutomatedEDA
 
@@ -170,39 +339,63 @@ eda = AutomatedEDA(data_source="sales_data.csv", source_type="csv")
 df = eda.load_data()
 eda.basic_stats()
 eda.data_quality_check()
+eda.visualize(save_plots=True)
 eda.export_summary(excel_path="sales_analysis.xlsx")
 ```
 
-### Analyze an Excel file
+### Example 4: Integrate with SQL
 ```python
-eda = AutomatedEDA(data_source="customer_data.xlsx", source_type="excel")
-df = eda.load_data()
-eda.visualize(save_plots=True)
+from src import DataLoader
+
+conn_str = "postgresql://user:password@localhost:5432/mydb"
+loader = DataLoader("customers", source_type="sql", 
+                   sql_connection_string=conn_str)
+df = loader.load()
+
+# Then run validations as usual...
 ```
 
-### Connect to SQL Database
-```python
-conn_str = "postgresql://user:password@localhost:5432/mydb"
-eda = AutomatedEDA(
-    data_source="customers",  # table name
-    source_type="sql",
-    sql_conn_str=conn_str
-)
-df = eda.load_data()
+## 🎨 Configuration
+
+Edit `config/rules.json` to customize validation rules:
+
+```json
+{
+  "critical_columns": ["id", "email"],
+  "required_columns": ["name", "created_at"],
+  "risk_weights": {
+    "missing_critical_id": {
+      "severity": "HIGH",
+      "points": 5
+    },
+    "duplicate_primary_key": {
+      "severity": "HIGH",
+      "points": 5
+    }
+  },
+  "thresholds": {
+    "missing_percent_high": 30,
+    "missing_percent_medium": 10,
+    "outlier_std_dev": 3
+  }
+}
 ```
 
 ## 📝 Future Enhancements
 
-- [ ] Add database connectivity support in Streamlit interface
+- [x] Comprehensive data validation engine
+- [x] Risk scoring and assessment
+- [x] Multiple report formats (CSV, Excel, HTML)
+- [x] Configurable validation rules
+- [ ] Add validation to Streamlit interface
 - [ ] Support for more file formats (JSON, Parquet, TSV)
-- [ ] Interactive data filtering and column selection
-- [ ] Advanced outlier detection with visualization
-- [ ] Time series analysis features
-- [ ] Data profiling reports with sweetviz integration
+- [ ] Interactive data filtering
+- [ ] Time series validation
+- [ ] Data profiling with pandas-profiling
 - [ ] PDF report generation
-- [ ] Data comparison (before/after cleaning)
-- [ ] Missing data imputation suggestions
-- [ ] Automated insight generation
+- [ ] Data comparison (before/after)
+- [ ] Automated data cleaning suggestions
+- [ ] Machine learning readiness checks
 
 ## 🤝 Contributing
 
@@ -238,5 +431,30 @@ Created as a Python data analysis automation tool for quick and efficient explor
 
 **Note**: This tool is designed for quick exploratory data analysis. For production-grade analysis, consider additional validation, testing, and data governance practices.
 
+## 🎓 What You'll Learn
+
+This project demonstrates:
+- Clean, maintainable Python code structure
+- Modular design with reusable components
+- Data validation best practices
+- Risk assessment methodologies
+- Report generation in multiple formats
+- Configuration-driven validation
+- Simple but effective data classes with `@dataclass`
+
 **Version**: 1.0.0  
 **Last Updated**: January 2026
+
+## ❓ FAQ
+
+**Q: Which approach should I use - Streamlit or validation pipeline?**
+A: Use Streamlit for quick interactive EDA. Use validation pipeline for comprehensive data quality assessment before critical analysis.
+
+**Q: Can I use both together?**
+A: Absolutely! They complement each other. Use validation pipeline first to assess quality, then Streamlit for visual exploration.
+
+**Q: How do I customize validation rules?**
+A: Edit `config/rules.json` to set thresholds, add required columns, and adjust risk weights.
+
+**Q: What's the difference between severity and risk score?**
+A: Severity (HIGH/MEDIUM/LOW) is per-issue. Risk score (0-100) is overall dataset quality based on all issues combined.

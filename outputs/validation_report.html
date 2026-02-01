@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Validation Report</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        .summary {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .metric {
+            display: inline-block;
+            margin: 10px 20px 10px 0;
+            padding: 10px 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .risk-critical { color: #e74c3c; }
+        .risk-high { color: #e67e22; }
+        .risk-medium { color: #f39c12; }
+        .risk-low { color: #27ae60; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th {
+            background-color: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .severity-HIGH {
+            background-color: #ffe5e5;
+            font-weight: bold;
+        }
+        .severity-MEDIUM {
+            background-color: #fff5e5;
+        }
+        .severity-LOW {
+            background-color: #e5f5ff;
+        }
+        .recommendation {
+            background-color: #e8f5e9;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #4caf50;
+            border-radius: 3px;
+        }
+        .timestamp {
+            color: #95a5a6;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Data Validation Report</h1>
+        <p class="timestamp">Generated: 2026-01-31 17:23:56</p>
+        
+        <div class="summary">
+            <h2>Summary</h2>
+            <div class="metric">
+                <div class="metric-label">Dataset Rows</div>
+                <div class="metric-value">10</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Columns</div>
+                <div class="metric-value">6</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Issues Found</div>
+                <div class="metric-value">5</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">Risk Level</div>
+                <div class="metric-value risk-medium">MEDIUM</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Risk Score</div>
+                <div class="metric-value">39.0/100</div>
+            </div>
+
+        </div>
+
+        <h2>Issues Detected</h2>
+        <table>
+            <tr>
+                <th>Severity</th>
+                <th>Type</th>
+                <th>Message</th>
+                <th>Column</th>
+                <th>Affected Rows</th>
+            </tr>
+
+            <tr class="severity-MEDIUM">
+                <td><strong>MEDIUM</strong></td>
+                <td>missing_values_column</td>
+                <td>Column 'name' has 2 missing values (20.0%)</td>
+                <td>name</td>
+                <td>2</td>
+            </tr>
+
+            <tr class="severity-MEDIUM">
+                <td><strong>MEDIUM</strong></td>
+                <td>missing_values_column</td>
+                <td>Column 'email' has 2 missing values (20.0%)</td>
+                <td>email</td>
+                <td>2</td>
+            </tr>
+
+            <tr class="severity-MEDIUM">
+                <td><strong>MEDIUM</strong></td>
+                <td>missing_values_column</td>
+                <td>Column 'salary' has 2 missing values (20.0%)</td>
+                <td>salary</td>
+                <td>2</td>
+            </tr>
+
+            <tr class="severity-MEDIUM">
+                <td><strong>MEDIUM</strong></td>
+                <td>duplicates</td>
+                <td>Found 1 fully duplicate rows</td>
+                <td>N/A</td>
+                <td>1</td>
+            </tr>
+
+            <tr class="severity-MEDIUM">
+                <td><strong>MEDIUM</strong></td>
+                <td>invalid_date_format</td>
+                <td>Column 'date_joined' has 1 values that can't be parsed as dates</td>
+                <td>date_joined</td>
+                <td>1</td>
+            </tr>
+
+        </table>
+
+        <h2>Recommendations</h2>
+        <div class="recommendation">📊 Consider data imputation strategies for missing values</div>
+        <div class="recommendation">🔍 Review and remove duplicate records to ensure data integrity</div>
+        <div class="recommendation">📅 Standardize date formats across the dataset</div>
+        <div class="recommendation">⚡ Address medium-priority issues before analysis</div>
+
+    </div>
+</body>
+</html>

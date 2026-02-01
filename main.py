@@ -29,6 +29,16 @@ class AutomatedEDA:
             self.df = pd.read_sql_table(self.data_source, engine)
         else:
             raise ValueError("source_type must be 'csv', 'excel', or 'sql'")
+        
+        # Fix PyArrow compatibility: Convert nullable integer types to regular types
+        # This prevents Arrow serialization errors in Streamlit
+        for col in self.df.columns:
+            dtype_str = str(self.df[col].dtype)
+            # Check for nullable integer types (Int8, Int16, Int32, Int64, etc.)
+            if dtype_str in ['Int8', 'Int16', 'Int32', 'Int64', 'UInt8', 'UInt16', 'UInt32', 'UInt64']:
+                # Convert to regular float to preserve NaN values
+                self.df[col] = pd.to_numeric(self.df[col], errors='coerce').astype('float64')
+        
         print("Data loaded successfully!")
         print(f"Shape: {self.df.shape}")
         return self.df
@@ -91,7 +101,8 @@ class AutomatedEDA:
         for col in self.df.select_dtypes(include='object').columns:
             # Sanitize sheet name - remove invalid Excel characters
             safe_name = col.replace(':', '_').replace('*', '_').replace('?', '_').replace('/', '_').replace('\\', '_').replace('[', '_').replace(']', '_')
-            safe_name = safe_name[:25]  # Limit to 25 chars (leaving room for "_Counts")
+            # Limit to 24 chars (leaving room for "_Counts" suffix, total 31)
+            safe_name = safe_name[:24]
             self.df[col].value_counts().to_excel(writer, sheet_name=f"{safe_name}_Counts")
         self.df.isna().sum().to_excel(writer, sheet_name='Missing_Values')
         print(f"Excel summary saved to {excel_path}")
