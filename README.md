@@ -9,10 +9,10 @@ DataQA is a simple Python tool that checks your data for common problems - missi
 ## Why Use DataQA?
 
 Ever loaded a dataset only to find:
-- 😕 Half the values are missing?
-- 😱 Duplicate records everywhere?
-- 🤔 Dates in weird formats?
-- 😤 "Unnamed" columns with no idea what they mean?
+- Half the values are missing?
+- Duplicate records everywhere?
+- Dates in weird formats?
+- "Unnamed" columns with no idea what they mean?
 
 **DataQA catches these problems before they ruin your analysis.**
 
@@ -117,7 +117,7 @@ After checking your data, DataQA gives you a risk score:
 
 DataQA generates several reports for you:
 
-### 1. Interactive Plotly Dashboard ⭐ NEW!
+### 1. Interactive Plotly Dashboard (NEW!)
 - **Fully interactive** - Click, zoom, and explore your data quality
 - Beautiful visualizations (gauge charts, bar charts, tables)
 - **Perfect for sharing** - Open in any browser, no software needed
