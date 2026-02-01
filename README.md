@@ -199,35 +199,34 @@ A: Severity (HIGH/MEDIUM/LOW) describes each individual issue. Risk score (0-100
 
 ## Troubleshooting
 
-**Problem: "streamlit: command not found"**  
-→ Make sure you installed everything: `pip install -r requirements.txt`
+**"streamlit: command not found"**  
+Run: `pip install -r requirements.txt`
 
-**Problem: "ModuleNotFoundError"**  
-→ You're missing a package. Run: `pip install -r requirements.txt`
+**"ModuleNotFoundError"**  
+Run: `pip install -r requirements.txt`
 
-**Problem: My file won't upload**  
-→ Make sure it's a .csv or .xlsx file and not corrupted
+**File won't upload**  
+Check it's a valid .csv or .xlsx file
 
-**Problem: The app is slow**  
-→ Large files take longer. Try with a smaller sample first.
-
----
-
-## What's Next?
-
-DataQA is actively being improved. Coming soon:
-- 📁 Multi-file comparison
-- 🗄️ Direct database connections
-- 📊 Advanced visualizations
-- 🤖 Auto-fix suggestions
-- 📧 Email alerts
+**App is slow**  
+Large files take time. Try a smaller sample first (e.g., first 10,000 rows)
 
 ---
 
-## Need Help?
+## Roadmap
 
-Found a bug? Have a suggestion? Want to contribute?  
-Open an issue on GitHub or reach out!
+Planned improvements:
+- Multi-file comparison
+- Database connections (PostgreSQL, MySQL)
+- Custom validation rules UI
+
+Have other ideas? Let me know!
+
+---
+
+## Questions or Feedback?
+
+Found a bug or have a suggestion? Feel free to reach out or open an issue on GitHub.
 
 ---
 
