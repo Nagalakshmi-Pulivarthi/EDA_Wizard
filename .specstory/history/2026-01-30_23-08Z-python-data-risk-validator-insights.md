@@ -2301,7 +2301,438 @@ Your `validators.py` should contain:
 
 ## 🏗️ **Step-by-Step Implementation Guide**
 
-### **Step 1: Create the Issue
+### **Step 1: Create the Issue Class**
+
+This class will standardize how you represent data quality issues:
+
+```python
+from dataclasses import dataclass
+from typing import Optional, List
+import pandas as pd
+
+@dataclass
+class Issue:
+    """Represents a single data quality issue"""
+    issue_type: str          # e.g., "missing_values", "duplicate_key"
+    column: Optional[str]    # Column name (None if row-level or dataset-level)
+    severity: str            # "HIGH", "MEDIUM", "LOW" (assigned by risk engine)
+    description: str         # Human-readable description
+    affected_rows: int       # Count of affected rows
+    affected_row_ids: Optional[List[int]] = None  # Specific row indices (optional)
+    percentage: Optional[float] = None  # % of dataset affected
+```
+
+**Why this structure?**
+- Consistent format for all validation results
+- Easy to convert to CSV/DataFrame later
+- Contains all info needed for risk scoring
+
+---
+
+### **Step 2: Create the DataValidator Class**
+
+```python
+import json
+from pathlib import Path
+
+class DataValidator:
+    """Core validation engine for data quality checks"""
+    
+    def __init__(self, df: pd.DataFrame, config_path: str = "config/rules.json"):
+        """
+        Args:
+            df: DataFrame to validate
+            config_path: Path to rules.json configuration
+        """
+        self.df = df
+        self.issues = []  # List to store all issues found
+        
+        # Load configuration
+        with open(config_path, 'r') as f:
+            self.config = json.load(f)
+        
+        self.critical_columns = self.config.get('critical_columns', [])
+        self.required_columns = self.config.get('required_columns', [])
+        self.thresholds = self.config.get('thresholds', {})
+    
+    def run_all_validations(self) -> List[Issue]:
+        """Run all validation checks and return list of issues"""
+        self.issues = []  # Reset issues list
+        
+        # Run each validation
+        self.check_missing_values_column()
+        self.check_missing_values_row()
+        self.check_duplicates()
+        self.check_data_types()
+        self.check_date_formats()
+        self.check_value_ranges()
+        
+        return self.issues
+```
+
+---
+
+### **Step 3: Implement Individual Validation Methods**
+
+#### **3.1 Missing Values (Column-Level)**
+
+```python
+def check_missing_values_column(self):
+    """Check for missing values in each column"""
+    for col in self.df.columns:
+        missing_count = self.df[col].isna().sum()
+        
+        if missing_count > 0:
+            missing_pct = (missing_count / len(self.df)) * 100
+            
+            # Determine issue type based on criticality
+            if col in self.critical_columns:
+                issue_type = "missing_critical_id"
+                description = f"Critical column '{col}' has {missing_count} missing values ({missing_pct:.1f}%)"
+            elif col in self.required_columns:
+                issue_type = "missing_required_field"
+                description = f"Required column '{col}' has {missing_count} missing values ({missing_pct:.1f}%)"
+            else:
+                issue_type = "missing_optional_field"
+                description = f"Column '{col}' has {missing_count} missing values ({missing_pct:.1f}%)"
+            
+            issue = Issue(
+                issue_type=issue_type,
+                column=col,
+                severity="PENDING",  # Will be assigned by risk engine
+                description=description,
+                affected_rows=missing_count,
+                percentage=missing_pct
+            )
+            self.issues.append(issue)
+```
+
+#### **3.2 Missing Values (Row-Level)**
+
+```python
+def check_missing_values_row(self):
+    """Check for rows that are mostly empty"""
+    threshold = 0.5  # Row is problematic if >50% values are missing
+    
+    for idx, row in self.df.iterrows():
+        missing_pct = row.isna().sum() / len(row)
+        
+        if missing_pct > threshold:
+            issue = Issue(
+                issue_type="mostly_empty_row",
+                column=None,
+                severity="PENDING",
+                description=f"Row {idx} is {missing_pct*100:.1f}% empty",
+                affected_rows=1,
+                affected_row_ids=[idx],
+                percentage=missing_pct * 100
+            )
+            self.issues.append(issue)
+```
+
+#### **3.3 Duplicate Detection**
+
+```python
+def check_duplicates(self, key_columns: Optional[List[str]] = None):
+    """
+    Check for duplicate rows
+    
+    Args:
+        key_columns: Specific columns to check (if None, checks entire row)
+    """
+    if key_columns:
+        # Check specific key columns
+        duplicates = self.df[self.df.duplicated(subset=key_columns, keep=False)]
+        
+        if len(duplicates) > 0:
+            # Group by key columns to count duplicates
+            dup_groups = duplicates.groupby(key_columns).size()
+            
+            for key_values, count in dup_groups.items():
+                issue = Issue(
+                    issue_type="duplicate_primary_key",
+                    column=", ".join(key_columns),
+                    severity="PENDING",
+                    description=f"Duplicate key {key_values} found {count} times",
+                    affected_rows=count
+                )
+                self.issues.append(issue)
+    else:
+        # Check entire row duplicates
+        dup_count = self.df.duplicated().sum()
+        
+        if dup_count > 0:
+            issue = Issue(
+                issue_type="duplicate_rows",
+                column=None,
+                severity="PENDING",
+                description=f"{dup_count} duplicate rows found",
+                affected_rows=dup_count,
+                percentage=(dup_count / len(self.df)) * 100
+            )
+            self.issues.append(issue)
+```
+
+#### **3.4 Data Type Validation**
+
+```python
+def check_data_types(self, expected_schema: Optional[dict] = None):
+    """
+    Check if columns match expected data types
+    
+    Args:
+        expected_schema: Dict like {'column_name': 'expected_type'}
+                        e.g., {'age': 'int64', 'email': 'object'}
+    """
+    if not expected_schema:
+        return  # Skip if no schema provided
+    
+    for col, expected_type in expected_schema.items():
+        if col not in self.df.columns:
+            issue = Issue(
+                issue_type="missing_column",
+                column=col,
+                severity="PENDING",
+                description=f"Expected column '{col}' not found in dataset",
+                affected_rows=len(self.df)
+            )
+            self.issues.append(issue)
+            continue
+        
+        actual_type = str(self.df[col].dtype)
+        
+        if actual_type != expected_type:
+            issue = Issue(
+                issue_type="type_mismatch",
+                column=col,
+                severity="PENDING",
+                description=f"Column '{col}' has type '{actual_type}', expected '{expected_type}'",
+                affected_rows=len(self.df)
+            )
+            self.issues.append(issue)
+```
+
+#### **3.5 Date Format Validation**
+
+```python
+def check_date_formats(self, date_columns: Optional[List[str]] = None):
+    """
+    Check if date columns can be parsed correctly
+    
+    Args:
+        date_columns: List of column names that should contain dates
+    """
+    if not date_columns:
+        # Auto-detect potential date columns
+        date_columns = [col for col in self.df.columns 
+                       if 'date' in col.lower() or 'time' in col.lower()]
+    
+    for col in date_columns:
+        if col not in self.df.columns:
+            continue
+        
+        # Try to parse dates
+        invalid_count = 0
+        invalid_rows = []
+        
+        for idx, value in self.df[col].items():
+            if pd.isna(value):
+                continue  # Skip nulls (handled by missing value check)
+            
+            try:
+                pd.to_datetime(value)
+            except:
+                invalid_count += 1
+                invalid_rows.append(idx)
+        
+        if invalid_count > 0:
+            invalid_pct = (invalid_count / len(self.df)) * 100
+            
+            issue = Issue(
+                issue_type="invalid_date_format",
+                column=col,
+                severity="PENDING",
+                description=f"{invalid_count} invalid date formats in '{col}' ({invalid_pct:.1f}%)",
+                affected_rows=invalid_count,
+                affected_row_ids=invalid_rows[:10],  # Store first 10
+                percentage=invalid_pct
+            )
+            self.issues.append(issue)
+```
+
+#### **3.6 Value Range Validation**
+
+```python
+def check_value_ranges(self, range_rules: Optional[dict] = None):
+    """
+    Check if values are within expected ranges
+    
+    Args:
+        range_rules: Dict like {'age': {'min': 0, 'max': 120},
+                                'salary': {'min': 0}}
+    """
+    if not range_rules:
+        # Default: Check for negative values in numeric columns
+        range_rules = {}
+    
+    # Check numeric columns for outliers using IQR method
+    numeric_cols = self.df.select_dtypes(include=[np.number]).columns
+    std_threshold = self.thresholds.get('outlier_std_dev', 3)
+    
+    for col in numeric_cols:
+        # Skip if column has explicit rules
+        if col in range_rules:
+            continue
+        
+        mean = self.df[col].mean()
+        std = self.df[col].std()
+        
+        # Detect outliers (values beyond 3 standard deviations)
+        outliers = self.df[
+            (self.df[col] < mean - std_threshold * std) |
+            (self.df[col] > mean + std_threshold * std)
+        ]
+        
+        if len(outliers) > 0:
+            outlier_pct = (len(outliers) / len(self.df)) * 100
+            
+            issue = Issue(
+                issue_type="outlier_values",
+                column=col,
+                severity="PENDING",
+                description=f"{len(outliers)} outlier values in '{col}' ({outlier_pct:.1f}%)",
+                affected_rows=len(outliers),
+                percentage=outlier_pct
+            )
+            self.issues.append(issue)
+    
+    # Check explicit range rules
+    for col, rules in range_rules.items():
+        if col not in self.df.columns:
+            continue
+        
+        min_val = rules.get('min')
+        max_val = rules.get('max')
+        
+        violations = []
+        
+        if min_val is not None:
+            violations_min = self.df[self.df[col] < min_val]
+            if len(violations_min) > 0:
+                issue = Issue(
+                    issue_type="value_out_of_range",
+                    column=col,
+                    severity="PENDING",
+                    description=f"{len(violations_min)} values in '{col}' below minimum ({min_val})",
+                    affected_rows=len(violations_min)
+                )
+                self.issues.append(issue)
+        
+        if max_val is not None:
+            violations_max = self.df[self.df[col] > max_val]
+            if len(violations_max) > 0:
+                issue = Issue(
+                    issue_type="value_out_of_range",
+                    column=col,
+                    severity="PENDING",
+                    description=f"{len(violations_max)} values in '{col}' exceed maximum ({max_val})",
+                    affected_rows=len(violations_max)
+                )
+                self.issues.append(issue)
+```
+
+---
+
+## 🎯 **Complete Module Structure**
+
+Here's how the complete `validators.py` should look:
+
+```python
+# validators.py
+# Core validation logic for data quality checks
+
+import pandas as pd
+import numpy as np
+import json
+from dataclasses import dataclass
+from typing import Optional, List
+from pathlib import Path
+
+
+@dataclass
+class Issue:
+    """Represents a single data quality issue"""
+    # ... (as shown above)
+
+
+class DataValidator:
+    """Core validation engine for data quality checks"""
+    
+    def __init__(self, df: pd.DataFrame, config_path: str = "config/rules.json"):
+        # ... (as shown above)
+    
+    def run_all_validations(self) -> List[Issue]:
+        # ... (as shown above)
+    
+    def check_missing_values_column(self):
+        # ... (implementation above)
+    
+    def check_missing_values_row(self):
+        # ... (implementation above)
+    
+    def check_duplicates(self, key_columns: Optional[List[str]] = None):
+        # ... (implementation above)
+    
+    def check_data_types(self, expected_schema: Optional[dict] = None):
+        # ... (implementation above)
+    
+    def check_date_formats(self, date_columns: Optional[List[str]] = None):
+        # ... (implementation above)
+    
+    def check_value_ranges(self, range_rules: Optional[dict] = None):
+        # ... (implementation above)
+```
+
+---
+
+## 📝 **How to Use It**
+
+Once implemented, you'd use it like this:
+
+```python
+# In main.py or app.py
+from src.validators import DataValidator
+import pandas as pd
+
+# Load data
+df = pd.read_csv("your_data.csv")
+
+# Create validator
+validator = DataValidator(df, config_path="config/rules.json")
+
+# Run validations
+issues = validator.run_all_validations()
+
+# Print results
+for issue in issues:
+    print(f"{issue.severity} - {issue.description}")
+```
+
+---
+
+## 🔑 **Key Design Decisions**
+
+1. **Separation of Concerns**: Validators only **detect** issues, they don't score them. The `risk_engine.py` will assign severity levels later.
+
+2. **Configuration-Driven**: Critical columns, thresholds, etc. come from `rules.json`, making it easy to customize without code changes.
+
+3. **Flexible Validation**: Methods accept optional parameters (like `key_columns`, `date_columns`) so you can customize per dataset.
+
+4. **Standardized Output**: All validators return `Issue` objects with consistent structure.
+
+---
+
+Would you like me to explain any specific validation method in more detail, or would you like guidance on implementing the `risk_engine.py` next?
 
 ---
 
