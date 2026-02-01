@@ -178,22 +178,23 @@ This lets you:
 ## Common Questions
 
 **Q: Do I need to know Python?**  
-A: Nope! Just run the web app and upload your file.
+No! Just run the web app and upload your file.
 
-**Q: What file formats work?**  
-A: CSV and Excel (.xlsx) files.
+**Q: What file formats are supported?**  
+CSV and Excel (.xlsx) files.
 
-**Q: Can I check multiple files?**  
-A: Currently one at a time. Multi-file support coming soon!
+**Q: Can I check multiple files at once?**  
+Not yet - one at a time for now. Multi-file support is planned!
 
 **Q: Is my data safe?**  
-A: Yes! Everything runs on your computer. Nothing is uploaded anywhere.
+Yes! Everything runs locally on your computer. No data is uploaded anywhere.
 
-**Q: How big can my data be?**  
-A: Tested with files up to 1 million rows. Larger files may be slower.
+**Q: How large can my files be?**  
+Tested up to 1 million rows. Larger files work but may be slower.
 
 **Q: What's the difference between severity and risk score?**  
-A: Severity (HIGH/MEDIUM/LOW) describes each individual issue. Risk score (0-100) is your overall data quality.
+Severity (HIGH/MEDIUM/LOW) = individual issue rating  
+Risk score (0-100) = overall data quality score
 
 ---
 
