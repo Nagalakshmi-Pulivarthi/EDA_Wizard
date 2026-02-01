@@ -68,8 +68,10 @@ def run_validation(file_path: str, file_type: str = 'csv', output_dir: str = 'ou
     print(f"   - validation_report.csv")
     print(f"   - validation_report.xlsx")
     print(f"   - validation_report.html")
+    print(f"   - interactive_dashboard.html  ⭐ NEW!")
     print(f"   - risk_summary.txt")
-    print("\n💡 Open the HTML report in your browser for best viewing experience!\n")
+    print("\n💡 Open interactive_dashboard.html in your browser for the best experience!")
+    print("   Perfect for sharing on LinkedIn! 🚀\n")
     
     return df, issues, risk_score
 

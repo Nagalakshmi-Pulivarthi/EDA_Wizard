@@ -1,6 +1,2 @@
 Severity,Check Type,Message,Column,Affected Rows,Details
-MEDIUM,missing_values_column,Column 'name' has 2 missing values (20.0%),name,2,{'missing_percent': np.float64(20.0)}
-MEDIUM,missing_values_column,Column 'email' has 2 missing values (20.0%),email,2,{'missing_percent': np.float64(20.0)}
-MEDIUM,missing_values_column,Column 'salary' has 2 missing values (20.0%),salary,2,{'missing_percent': np.float64(20.0)}
-MEDIUM,duplicates,Found 1 fully duplicate rows,N/A,1,N/A
-MEDIUM,invalid_date_format,Column 'date_joined' has 1 values that can't be parsed as dates,date_joined,1,N/A
+LOW,missing_values_column,Column 'color' has 990 missing values (2.0%),color,990,{'missing_percent': np.float64(1.9800000000000002)}

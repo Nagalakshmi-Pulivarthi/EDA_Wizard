@@ -22,10 +22,10 @@ Ever loaded a dataset only to find:
 
 DataQA checks your data and gives you:
 
-✅ **Risk Score** - A simple 0-100 score (lower is better)  
-✅ **Quality Issues** - Clear list of what's wrong  
-✅ **Recommendations** - What to fix first  
-✅ **Visual Reports** - Easy-to-read charts and tables  
+**Risk Score** - A simple 0-100 score (lower is better)  
+**Quality Issues** - Clear list of what's wrong  
+**Recommendations** - What to fix first  
+**Visual Reports** - Easy-to-read charts and tables  
 
 Plus, you get basic stats and correlations to understand your data better.
 
@@ -106,10 +106,10 @@ DataQA looks for these common problems:
 
 After checking your data, DataQA gives you a risk score:
 
-- **0-24 = LOW** 🟢 Your data is good to go
-- **25-49 = MEDIUM** 🟡 Some issues to fix, but usable
-- **50-74 = HIGH** 🟠 Serious problems - fix before analyzing
-- **75-100 = CRITICAL** 🔴 Too many issues - don't use this data yet
+- **0-24 = LOW** - Your data is good to go
+- **25-49 = MEDIUM** - Some issues to fix, but usable
+- **50-74 = HIGH** - Serious problems - fix before analyzing
+- **75-100 = CRITICAL** - Too many issues - don't use this data yet
 
 ---
 
@@ -117,23 +117,30 @@ After checking your data, DataQA gives you a risk score:
 
 DataQA generates several reports for you:
 
-### 1. Web Dashboard
+### 1. Interactive Plotly Dashboard ⭐ NEW!
+- **Fully interactive** - Click, zoom, and explore your data quality
+- Beautiful visualizations (gauge charts, bar charts, tables)
+- **Perfect for sharing** - Open in any browser, no software needed
+- **Great for LinkedIn/Portfolio** - Shows your data quality work professionally
+- File: `outputs/interactive_dashboard.html`
+
+### 2. Web Dashboard (Streamlit)
 - Interactive charts
 - Color-coded issues
 - One-click downloads
 
-### 2. Excel Report
+### 3. Excel Report
 - Summary sheet with your score
 - Detailed issues list
 - Column-by-column breakdown
 - Recommendations
 
-### 3. HTML Report
+### 4. HTML Report
 - Beautiful styled report
 - Easy to share with your team
 - Opens in any browser
 
-### 4. CSV Files
+### 5. CSV Files
 - Simple tables for further analysis
 - Import into Excel or other tools
 
@@ -172,62 +179,6 @@ This lets you:
 - Specify which columns must exist
 - Set your own thresholds for problems
 - Adjust severity levels
-
----
-
-## Common Questions
-
-**Q: Do I need to know Python?**  
-No! Just run the web app and upload your file.
-
-**Q: What file formats are supported?**  
-CSV and Excel (.xlsx) files.
-
-**Q: Can I check multiple files at once?**  
-Not yet - one at a time for now. Multi-file support is planned!
-
-**Q: Is my data safe?**  
-Yes! Everything runs locally on your computer. No data is uploaded anywhere.
-
-**Q: How large can my files be?**  
-Tested up to 1 million rows. Larger files work but may be slower.
-
-**Q: What's the difference between severity and risk score?**  
-Severity (HIGH/MEDIUM/LOW) = individual issue rating  
-Risk score (0-100) = overall data quality score
-
----
-
-## Troubleshooting
-
-**"streamlit: command not found"**  
-Run: `pip install -r requirements.txt`
-
-**"ModuleNotFoundError"**  
-Run: `pip install -r requirements.txt`
-
-**File won't upload**  
-Check it's a valid .csv or .xlsx file
-
-**App is slow**  
-Large files take time. Try a smaller sample first (e.g., first 10,000 rows)
-
----
-
-## Roadmap
-
-Planned improvements:
-- Multi-file comparison
-- Database connections (PostgreSQL, MySQL)
-- Custom validation rules UI
-
-Have other ideas? Let me know!
-
----
-
-## Questions or Feedback?
-
-Found a bug or have a suggestion? Feel free to reach out or open an issue on GitHub.
 
 ---
 

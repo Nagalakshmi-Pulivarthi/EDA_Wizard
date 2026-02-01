@@ -8,6 +8,14 @@ from pathlib import Path
 from .validators import Issue
 from .risk_engine import RiskScore
 
+try:
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+    import plotly.express as px
+    PLOTLY_AVAILABLE = True
+except ImportError:
+    PLOTLY_AVAILABLE = False
+
 
 class ReportGenerator:
     """
@@ -340,6 +348,183 @@ class ReportGenerator:
         
         print(f"✅ HTML report saved to {output_path}")
     
+    def generate_plotly_dashboard(self, output_path: str = "outputs/interactive_dashboard.html"):
+        """
+        Generate an interactive Plotly dashboard
+        Perfect for sharing on LinkedIn and GitHub!
+        
+        Args:
+            output_path: Where to save the HTML file
+        """
+        if not PLOTLY_AVAILABLE:
+            print("⚠️  Plotly not installed. Skipping interactive dashboard.")
+            print("   Install with: pip install plotly")
+            return
+        
+        # Create subplots layout
+        fig = make_subplots(
+            rows=3, cols=2,
+            row_heights=[0.25, 0.35, 0.4],
+            column_widths=[0.5, 0.5],
+            specs=[
+                [{"type": "indicator"}, {"type": "indicator"}],
+                [{"type": "bar", "colspan": 2}, None],
+                [{"type": "table", "colspan": 2}, None]
+            ],
+            subplot_titles=(
+                "Total Issues", "Risk Score",
+                "Issues by Severity & Type",
+                "Detailed Issues"
+            ),
+            vertical_spacing=0.12,
+            horizontal_spacing=0.1
+        )
+        
+        # KPI 1: Total Issues
+        fig.add_trace(
+            go.Indicator(
+                mode="number+delta",
+                value=len(self.issues),
+                title={"text": "Total Issues Found"},
+                delta={'reference': 0, 'increasing': {'color': "red"}},
+                domain={'x': [0, 1], 'y': [0, 1]}
+            ),
+            row=1, col=1
+        )
+        
+        # KPI 2: Risk Score
+        risk_score_value = self.risk_score.total_score if self.risk_score else 0
+        risk_color = "red" if risk_score_value > 70 else "orange" if risk_score_value > 40 else "green"
+        
+        fig.add_trace(
+            go.Indicator(
+                mode="gauge+number",
+                value=risk_score_value,
+                title={"text": "Risk Score"},
+                gauge={
+                    'axis': {'range': [0, 100]},
+                    'bar': {'color': risk_color},
+                    'steps': [
+                        {'range': [0, 30], 'color': "lightgreen"},
+                        {'range': [30, 70], 'color': "lightyellow"},
+                        {'range': [70, 100], 'color': "lightcoral"}
+                    ],
+                    'threshold': {
+                        'line': {'color': "red", 'width': 4},
+                        'thickness': 0.75,
+                        'value': 70
+                    }
+                },
+                domain={'x': [0, 1], 'y': [0, 1]}
+            ),
+            row=1, col=2
+        )
+        
+        # Chart: Issues by Severity and Type
+        if self.issues:
+            # Count by severity
+            severity_counts = {}
+            type_counts = {}
+            for issue in self.issues:
+                severity_counts[issue.severity] = severity_counts.get(issue.severity, 0) + 1
+                type_counts[issue.check_type] = type_counts.get(issue.check_type, 0) + 1
+            
+            # Severity bar chart
+            severity_order = ['HIGH', 'MEDIUM', 'LOW']
+            severity_colors = {'HIGH': '#e74c3c', 'MEDIUM': '#f39c12', 'LOW': '#3498db'}
+            
+            severities = [s for s in severity_order if s in severity_counts]
+            counts = [severity_counts[s] for s in severities]
+            colors = [severity_colors[s] for s in severities]
+            
+            fig.add_trace(
+                go.Bar(
+                    x=severities,
+                    y=counts,
+                    name="By Severity",
+                    marker_color=colors,
+                    text=counts,
+                    textposition='auto',
+                    hovertemplate='<b>%{x}</b><br>Count: %{y}<extra></extra>'
+                ),
+                row=2, col=1
+            )
+            
+            # Update bar chart layout
+            fig.update_xaxes(title_text="Severity Level", row=2, col=1)
+            fig.update_yaxes(title_text="Number of Issues", row=2, col=1)
+        
+        # Table: Detailed Issues
+        if self.issues:
+            # Sort issues by severity
+            sorted_issues = sorted(self.issues, key=lambda x: ['HIGH', 'MEDIUM', 'LOW'].index(x.severity))
+            
+            table_data = {
+                'Severity': [issue.severity for issue in sorted_issues],
+                'Type': [issue.check_type for issue in sorted_issues],
+                'Message': [issue.message[:80] + '...' if len(issue.message) > 80 else issue.message 
+                           for issue in sorted_issues],
+                'Column': [issue.column or 'N/A' for issue in sorted_issues],
+                'Rows': [issue.row_count or 'N/A' for issue in sorted_issues]
+            }
+            
+            # Color code severity
+            severity_colors_table = {
+                'HIGH': '#ffcccc',
+                'MEDIUM': '#fff4cc',
+                'LOW': '#cce5ff'
+            }
+            cell_colors = [[severity_colors_table.get(sev, 'white')] * 5 for sev in table_data['Severity']]
+            cell_colors_transposed = list(map(list, zip(*cell_colors)))
+            
+            fig.add_trace(
+                go.Table(
+                    header=dict(
+                        values=['<b>Severity</b>', '<b>Type</b>', '<b>Message</b>', '<b>Column</b>', '<b>Affected Rows</b>'],
+                        fill_color='#34495e',
+                        font=dict(color='white', size=12),
+                        align='left'
+                    ),
+                    cells=dict(
+                        values=[table_data['Severity'], table_data['Type'], table_data['Message'], 
+                               table_data['Column'], table_data['Rows']],
+                        fill_color=cell_colors_transposed,
+                        align='left',
+                        height=25
+                    )
+                ),
+                row=3, col=1
+            )
+        
+        # Update overall layout
+        fig.update_layout(
+            title={
+                'text': f"<b>Data Quality Control Dashboard</b><br><sub>Generated: {self.timestamp}</sub>",
+                'x': 0.5,
+                'xanchor': 'center',
+                'font': {'size': 24}
+            },
+            showlegend=False,
+            height=1000,
+            font=dict(family="Arial, sans-serif", size=12),
+            plot_bgcolor='#f8f9fa',
+            paper_bgcolor='white',
+            margin=dict(t=100, l=50, r=50, b=50)
+        )
+        
+        # Save to HTML
+        fig.write_html(
+            output_path,
+            config={
+                'displayModeBar': True,
+                'displaylogo': False,
+                'modeBarButtonsToRemove': ['pan2d', 'lasso2d', 'select2d']
+            }
+        )
+        
+        print(f"✅ Interactive Plotly dashboard saved to {output_path}")
+        print(f"   📊 Open in browser to explore!")
+    
     def print_console_summary(self):
         """Print a nice summary to console"""
         print("\n" + "="*60)
@@ -374,6 +559,7 @@ class ReportGenerator:
         self.generate_csv_report(f"{output_dir}/validation_report.csv")
         self.generate_excel_report(f"{output_dir}/validation_report.xlsx")
         self.generate_html_report(f"{output_dir}/validation_report.html")
+        self.generate_plotly_dashboard(f"{output_dir}/interactive_dashboard.html")
         self.print_console_summary()
         
         print("✅ All reports generated successfully!")

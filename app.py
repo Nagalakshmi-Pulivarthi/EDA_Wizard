@@ -9,6 +9,15 @@ from src.risk_engine import RiskEngine
 from src.report_generator import ReportGenerator
 import os
 
+# Import Plotly for interactive charts
+try:
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+    import plotly.express as px
+    PLOTLY_AVAILABLE = True
+except ImportError:
+    PLOTLY_AVAILABLE = False
+
 def clean_dataframe_for_display(df):
     """
     Clean dataframe to make it compatible with PyArrow/Streamlit display.
@@ -22,6 +31,229 @@ def clean_dataframe_for_display(df):
             df_display[col] = df_display[col].astype(str)
     
     return df_display
+
+
+def create_interactive_plotly_charts(issues, risk_score):
+    """
+    Create interactive Plotly charts for the Streamlit dashboard
+    """
+    if not PLOTLY_AVAILABLE:
+        st.warning("Plotly not installed. Install with: pip install plotly")
+        return
+    
+    # Create tabs for different visualizations
+    tab1, tab2, tab3 = st.tabs(["Risk Overview", "Issues Analysis", "Detailed Table"])
+    
+    with tab1:
+        # Risk Score Gauge and KPIs
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Risk Score Gauge
+            risk_score_value = risk_score.total_score if risk_score else 0
+            risk_color = "red" if risk_score_value > 70 else "orange" if risk_score_value > 40 else "green"
+            
+            fig_gauge = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=risk_score_value,
+                title={'text': "Risk Score", 'font': {'size': 24}},
+                gauge={
+                    'axis': {'range': [0, 100]},
+                    'bar': {'color': risk_color},
+                    'steps': [
+                        {'range': [0, 30], 'color': "lightgreen"},
+                        {'range': [30, 70], 'color': "lightyellow"},
+                        {'range': [70, 100], 'color': "lightcoral"}
+                    ],
+                    'threshold': {
+                        'line': {'color': "red", 'width': 4},
+                        'thickness': 0.75,
+                        'value': 70
+                    }
+                }
+            ))
+            fig_gauge.update_layout(height=300, margin=dict(l=20, r=20, t=50, b=20))
+            st.plotly_chart(fig_gauge, use_container_width=True)
+        
+        with col2:
+            # Total Issues Indicator
+            fig_issues = go.Figure(go.Indicator(
+                mode="number+delta",
+                value=len(issues),
+                title={'text': "Total Issues Found", 'font': {'size': 20}},
+                delta={'reference': 0, 'increasing': {'color': "red"}},
+                number={'font': {'size': 60}}
+            ))
+            fig_issues.update_layout(height=300, margin=dict(l=20, r=20, t=50, b=20))
+            st.plotly_chart(fig_issues, use_container_width=True)
+    
+    with tab2:
+        if issues:
+            # Collect issue details with column information
+            severity_counts = {}
+            type_counts = {}
+            column_issues = {}  # Track issues by column
+            
+            for issue in issues:
+                severity_counts[issue.severity] = severity_counts.get(issue.severity, 0) + 1
+                type_counts[issue.check_type] = type_counts.get(issue.check_type, 0) + 1
+                
+                # Track column-specific issues
+                col_name = issue.column if issue.column else 'General'
+                if col_name not in column_issues:
+                    column_issues[col_name] = []
+                column_issues[col_name].append({
+                    'type': issue.check_type,
+                    'severity': issue.severity,
+                    'message': issue.message
+                })
+            
+            # Create 3 charts instead of 2
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                # Severity bar chart
+                severity_order = ['HIGH', 'MEDIUM', 'LOW']
+                severity_colors_map = {'HIGH': '#e74c3c', 'MEDIUM': '#f39c12', 'LOW': '#3498db'}
+                
+                severities = [s for s in severity_order if s in severity_counts]
+                counts = [severity_counts[s] for s in severities]
+                colors = [severity_colors_map[s] for s in severities]
+                
+                fig_severity = go.Figure(data=[
+                    go.Bar(
+                        x=severities,
+                        y=counts,
+                        marker_color=colors,
+                        text=counts,
+                        textposition='auto',
+                        hovertemplate='<b>%{x}</b><br>Count: %{y}<extra></extra>'
+                    )
+                ])
+                fig_severity.update_layout(
+                    title="Issues by Severity",
+                    xaxis_title="Severity Level",
+                    yaxis_title="Number of Issues",
+                    height=400,
+                    showlegend=False,
+                    margin=dict(l=10, r=10, t=40, b=10)
+                )
+                st.plotly_chart(fig_severity, use_container_width=True)
+            
+            with col2:
+                # Issues by Column Bar Chart - NEW!
+                columns = list(column_issues.keys())
+                column_counts = [len(column_issues[col]) for col in columns]
+                
+                # Create hover text with issue details
+                hover_texts = []
+                for col in columns:
+                    issues_list = column_issues[col]
+                    hover_text = f"<b>{col}</b><br>Total Issues: {len(issues_list)}<br><br>"
+                    for idx, iss in enumerate(issues_list[:3]):  # Show first 3 issues
+                        hover_text += f"? {iss['type'].replace('_', ' ').title()}<br>"
+                    if len(issues_list) > 3:
+                        hover_text += f"<i>...and {len(issues_list) - 3} more</i>"
+                    hover_texts.append(hover_text)
+                
+                fig_column = go.Figure(data=[
+                    go.Bar(
+                        x=columns,
+                        y=column_counts,
+                        marker_color='#9b59b6',
+                        text=column_counts,
+                        textposition='auto',
+                        hovertemplate='%{customdata}<extra></extra>',
+                        customdata=hover_texts
+                    )
+                ])
+                fig_column.update_layout(
+                    title="Issues by Column",
+                    xaxis_title="Column Name",
+                    yaxis_title="Number of Issues",
+                    height=400,
+                    showlegend=False,
+                    margin=dict(l=10, r=10, t=40, b=10)
+                )
+                st.plotly_chart(fig_column, use_container_width=True)
+            
+            with col3:
+                # Issues by Type Pie Chart with column details in hover
+                type_details = {}
+                for col, issues_list in column_issues.items():
+                    for iss in issues_list:
+                        issue_type = iss['type']
+                        if issue_type not in type_details:
+                            type_details[issue_type] = []
+                        type_details[issue_type].append(col)
+                
+                # Create hover text with column names
+                hover_texts_pie = []
+                for issue_type in type_counts.keys():
+                    affected_cols = type_details.get(issue_type, [])
+                    cols_text = ', '.join(affected_cols) if affected_cols else 'N/A'
+                    hover_text = f"<b>{issue_type.replace('_', ' ').title()}</b><br>Count: {type_counts[issue_type]}<br>Columns: {cols_text}"
+                    hover_texts_pie.append(hover_text)
+                
+                fig_type = go.Figure(data=[
+                    go.Pie(
+                        labels=[t.replace('_', ' ').title() for t in type_counts.keys()],
+                        values=list(type_counts.values()),
+                        hole=0.3,
+                        hovertemplate='%{customdata}<extra></extra>',
+                        customdata=hover_texts_pie
+                    )
+                ])
+                fig_type.update_layout(
+                    title="Issues by Type",
+                    height=400,
+                    margin=dict(l=10, r=10, t=40, b=10)
+                )
+                st.plotly_chart(fig_type, use_container_width=True)
+        else:
+            st.success("No issues found! Your data quality is excellent.")
+    
+    with tab3:
+        if issues:
+            # Detailed Issues Table
+            sorted_issues = sorted(issues, key=lambda x: ['HIGH', 'MEDIUM', 'LOW'].index(x.severity))
+            
+            table_data = {
+                'Severity': [issue.severity for issue in sorted_issues],
+                'Type': [issue.check_type.replace('_', ' ').title() for issue in sorted_issues],
+                'Message': [issue.message for issue in sorted_issues],
+                'Column': [issue.column or 'N/A' for issue in sorted_issues],
+                'Affected Rows': [issue.row_count or 'N/A' for issue in sorted_issues]
+            }
+            
+            # Create interactive table
+            df_issues = pd.DataFrame(table_data)
+            
+            # Color coding function
+            def color_severity(val):
+                if val == 'HIGH':
+                    return 'background-color: #ffcccc'
+                elif val == 'MEDIUM':
+                    return 'background-color: #fff4cc'
+                elif val == 'LOW':
+                    return 'background-color: #cce5ff'
+                return ''
+            
+            # Apply styling
+            styled_df = df_issues.style.applymap(color_severity, subset=['Severity'])
+            st.dataframe(styled_df, use_container_width=True, height=400)
+            
+            # Download button for issues
+            csv = df_issues.to_csv(index=False)
+            st.download_button(
+                label="Download Issues as CSV",
+                data=csv,
+                file_name="data_quality_issues.csv",
+                mime="text/csv"
+            )
+        else:
+            st.info("No issues to display - your data is clean!")
+
 
 st.title("DataQA (Quality Assurance) Tool")
 
@@ -79,6 +311,17 @@ if uploaded_file:
         st.write("**Recommendations:**")
         for rec in risk_score.recommendations:
             st.info(rec)
+    
+    # ==========================================
+    # INTERACTIVE PLOTLY DASHBOARD - NEW!
+    # ==========================================
+    st.subheader("Interactive Data Quality Dashboard")
+    st.markdown("*Explore your data quality with interactive visualizations*")
+    
+    create_interactive_plotly_charts(issues, risk_score)
+    
+    st.markdown("---")  # Separator
+    # ==========================================
     
     # Issues breakdown
     if issues:
@@ -153,7 +396,7 @@ if uploaded_file:
     # Export
     st.subheader("Export Report")
     
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     
     with col1:
         if st.button("Generate Excel Report"):
@@ -182,3 +425,24 @@ if uploaded_file:
             
             with open("outputs/risk_summary.txt", "rb") as f:
                 st.download_button("Download Risk Summary", f, "risk_summary.txt", mime="text/plain")
+    
+    with col3:
+        if st.button("Export Interactive Dashboard"):
+            # Create outputs directory if it doesn't exist
+            os.makedirs("outputs", exist_ok=True)
+            
+            # Generate the Plotly dashboard
+            reporter = ReportGenerator(df, issues, risk_score)
+            reporter.generate_plotly_dashboard(output_path="outputs/interactive_dashboard.html")
+            
+            st.success("Interactive dashboard generated!")
+            
+            # Provide download button
+            with open("outputs/interactive_dashboard.html", "rb") as f:
+                st.download_button(
+                    "Download Interactive Dashboard", 
+                    f, 
+                    "interactive_dashboard.html", 
+                    mime="text/html",
+                    help="Perfect for sharing on LinkedIn!"
+                )
