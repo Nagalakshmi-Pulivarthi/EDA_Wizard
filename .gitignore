@@ -75,3 +75,4 @@ secrets.json
 *.bak
 *.backup
 *.old
+*.specstory
