@@ -75,4 +75,7 @@ secrets.json
 *.bak
 *.backup
 *.old
+
+# Cursor/Specstory
+.specstory/
 *.specstory
