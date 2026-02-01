@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Virtual Environments
+venv/
+env/
+pythonprojects/
+ENV/
+*.venv
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+.swo
+*~
+.cursorindexignore
+
+# DataQA Temporary Files
+temp_*.csv
+temp_*.xlsx
+temp_*.xls
+temp_*.*
+
+# DataQA Generated Reports & Outputs
+outputs/
+*.log
+EDA_Summary.xlsx
+EDA_Report.html
+validation_report.csv
+validation_report.xlsx
+validation_report.html
+risk_summary.txt
+
+# Documentation - Temporary Lock Files
+~$*.docx
+~$*.xlsx
+~$*.pptx
+*.tmp
+Data Quality.docx
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+secrets.json
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Misc
+*.bak
+*.backup
+*.old
