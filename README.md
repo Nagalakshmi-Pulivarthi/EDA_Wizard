@@ -1,460 +1,245 @@
-# 📊 Automated EDA & Data Validation Tool
+# DataQA - Your Data Quality Assistant
 
-A comprehensive Python tool for automated Exploratory Data Analysis (EDA) and data quality validation. Features both a Streamlit web interface and a powerful command-line validation pipeline with risk assessment.
+**Make sure your data is ready before you analyze it.**
 
-## ✨ Features
+DataQA is a simple Python tool that checks your data for common problems - missing values, duplicates, formatting issues, and more. It gives you a clear quality score and tells you exactly what to fix.
 
-### 🎯 Two Ways to Use:
+---
 
-#### 1. **Streamlit Web App** (Interactive EDA)
-- **📁 File Upload**: Support for CSV and Excel files
-- **📊 Dataset Overview**: Quick metrics and data preview
-- **📈 Summary Statistics**: Comprehensive statistical analysis
-- **🔥 Correlation Heatmap**: Visual correlation analysis
-- **💾 Export Reports**: Download Excel reports
+## Why Use DataQA?
 
-#### 2. **Validation Pipeline** (Data Quality & Risk Assessment)
-- **🔍 Comprehensive Validation**: 8 different data quality checks
-- **⚠️ Risk Scoring**: Automated risk assessment (0-100 scale)
-- **📊 Multiple Reports**: CSV, Excel, HTML, and text summaries
-- **🎯 Smart Recommendations**: Actionable insights to fix issues
-- **📈 Detailed Analysis**: Missing values, duplicates, outliers, data types, dates, and more
+Ever loaded a dataset only to find:
+- 😕 Half the values are missing?
+- 😱 Duplicate records everywhere?
+- 🤔 Dates in weird formats?
+- 😤 "Unnamed" columns with no idea what they mean?
 
-## 🚀 Installation
+**DataQA catches these problems before they ruin your analysis.**
 
-### Prerequisites
+---
 
-- Python 3.13.x
-- pip (Python package manager)
+## What Does It Do?
 
-### Setup Steps
+DataQA checks your data and gives you:
 
-1. **Clone or download this repository**
+✅ **Risk Score** - A simple 0-100 score (lower is better)  
+✅ **Quality Issues** - Clear list of what's wrong  
+✅ **Recommendations** - What to fix first  
+✅ **Visual Reports** - Easy-to-read charts and tables  
 
-2. **Create a virtual environment** (recommended):
-   ```bash
-   py -3.13 -m venv venv
-   ```
+Plus, you get basic stats and correlations to understand your data better.
 
-3. **Activate the virtual environment**:
-   ```bash
-   # Windows PowerShell
-   .\venv\Scripts\Activate.ps1
-   
-   # Windows Command Prompt
-   .\venv\Scripts\activate.bat
-   
-   # macOS/Linux
-   source venv/bin/activate
-   ```
+---
 
-4. **Install required packages**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+## Getting Started
 
-## 📦 Dependencies
+### 1. Install Python
+You need Python 3.13 or newer. [Download here](https://www.python.org/downloads/)
 
-- `pandas` - Data manipulation and analysis
-- `numpy` - Numerical computing
-- `seaborn` - Statistical data visualization
-- `matplotlib` - Plotting library
-- `sqlalchemy` - SQL database connectivity (for future SQL support)
-- `openpyxl` - Excel file handling
-- `streamlit` - Web app framework
+### 2. Install DataQA
 
-## 🎯 Usage
+Open your terminal and run:
 
-### Option 1: Enhanced Streamlit Web App (Interactive)
+```bash
+# Clone or download this project
+cd EDA_Automation
 
-**New!** The Streamlit app now has 3 powerful modes:
+# Install required packages
+pip install -r requirements.txt
+```
 
+That's it! You're ready to go.
+
+---
+
+## How to Use It
+
+### Web Interface (Easiest Way)
+
+Run this command:
 ```bash
 streamlit run app.py
 ```
 
-Then choose your analysis mode:
-1. **📈 Quick EDA** - Fast data exploration with visualizations
-2. **🔍 Data Validation** - Comprehensive quality checks with risk scoring
-3. **📊 Complete Analysis** - Combined EDA + Validation in one view
+Your browser will open automatically. Then:
+1. Upload your CSV or Excel file
+2. See your data quality score instantly
+3. Review the issues found
+4. Download detailed reports
 
-**Features**:
-- ✨ Color-coded risk assessment
-- ✨ Interactive issue explorer with filters
-- ✨ Visual dashboards and charts
-- ✨ One-click report downloads
-- ✨ Smart recommendations
-- ✨ Professional UI
+**That's it!** No coding required.
 
-See [STREAMLIT_GUIDE.md](STREAMLIT_GUIDE.md) for detailed instructions.
+---
 
-### Option 2: Validation Pipeline (Data Quality Assessment)
+### Command Line (For Automation)
 
-#### Quick Start - Single Command:
+Want to check a file quickly? Run:
 ```bash
 python run_validation.py your_data.csv
 ```
 
-That's it! This will:
-- Load your data
-- Run 8 validation checks
-- Calculate risk score
-- Generate 4 different reports
+This will:
+- Check your data for 8 common issues
+- Calculate a quality score
+- Generate reports in multiple formats
+- Save everything to the `outputs/` folder
 
-#### Advanced Usage:
-```python
-from src import DataLoader, DataValidator, RiskEngine, ReportGenerator
+---
 
-# Load data
-loader = DataLoader("data.csv", source_type="csv")
-df = loader.load()
+## What Gets Checked?
 
-# Run validations
-validator = DataValidator(df)
-issues = validator.run_all_validations()
+DataQA looks for these common problems:
 
-# Calculate risk
-risk_engine = RiskEngine()
-risk_score = risk_engine.calculate_risk(issues, df)
+| Check | What It Does |
+|-------|--------------|
+| **Missing Values** | Finds blank cells in your data |
+| **Duplicates** | Catches repeated rows |
+| **Data Types** | Makes sure numbers are numbers, dates are dates, etc. |
+| **Date Formats** | Finds invalid or inconsistent dates |
+| **Outliers** | Spots values that seem way off |
+| **Required Columns** | Checks if important columns exist |
+| **Value Ranges** | Makes sure values are within expected limits |
 
-# Generate reports
-reporter = ReportGenerator(df, issues, risk_score)
-reporter.generate_all_reports()
-```
+---
 
-#### What Gets Checked:
-1. ✅ **Missing Values** - Column and row level analysis
-2. ✅ **Duplicates** - Full row and key column duplicates
-3. ✅ **Data Types** - Type validation and suggestions
-4. ✅ **Date Formats** - Invalid date detection
-5. ✅ **Outliers** - Statistical outlier detection
-6. ✅ **Required Columns** - Ensure critical columns exist
-7. ✅ **Value Ranges** - Min/max validation
-8. ✅ **Risk Scoring** - Overall data quality assessment
+## Understanding Your Risk Score
 
-## 📂 Project Structure
+After checking your data, DataQA gives you a risk score:
+
+- **0-24 = LOW** 🟢 Your data is good to go
+- **25-49 = MEDIUM** 🟡 Some issues to fix, but usable
+- **50-74 = HIGH** 🟠 Serious problems - fix before analyzing
+- **75-100 = CRITICAL** 🔴 Too many issues - don't use this data yet
+
+---
+
+## What You Get
+
+DataQA generates several reports for you:
+
+### 1. Web Dashboard
+- Interactive charts
+- Color-coded issues
+- One-click downloads
+
+### 2. Excel Report
+- Summary sheet with your score
+- Detailed issues list
+- Column-by-column breakdown
+- Recommendations
+
+### 3. HTML Report
+- Beautiful styled report
+- Easy to share with your team
+- Opens in any browser
+
+### 4. CSV Files
+- Simple tables for further analysis
+- Import into Excel or other tools
+
+---
+
+## Project Files
 
 ```
 EDA_Automation/
-├── app.py                      # Streamlit web interface
-├── main.py                     # Core EDA logic (AutomatedEDA class)
-├── run_validation.py           # Main validation pipeline script
-├── requirements.txt            # Package dependencies
+├── app.py                    # Web interface (run this!)
+├── run_validation.py         # Command-line tool
+├── requirements.txt          # What to install
 ├── config/
-│   └── rules.json             # Validation rules and thresholds
-├── src/                       # Core validation modules
-│   ├── __init__.py           # Package initialization
-│   ├── data_loader.py        # Data loading from CSV/Excel/SQL
-│   ├── validators.py         # All validation checks
-│   ├── risk_engine.py        # Risk scoring and assessment
-│   └── report_generator.py   # Report generation (CSV/Excel/HTML)
-├── outputs/                   # Generated reports (auto-created)
-│   ├── validation_report.csv
-│   ├── validation_report.xlsx
-│   ├── validation_report.html
-│   └── risk_summary.txt
-└── README.md                  # This file
+│   └── rules.json           # Customize validation rules here
+├── src/                     # Core code (you don't need to touch this)
+└── outputs/                 # Your reports go here
 ```
 
-## 🔧 Features Breakdown
+---
 
-### 1. Data Loader (`src/data_loader.py`)
-Load data from multiple sources:
-```python
-from src import DataLoader
+## Customizing Rules
 
-# CSV
-loader = DataLoader("data.csv", source_type="csv")
-
-# Excel (with sheet selection)
-loader = DataLoader("data.xlsx", source_type="excel", sheet_name="Sales")
-
-# SQL
-loader = DataLoader("users", source_type="sql", 
-                   sql_connection_string="postgresql://localhost/db")
-
-df = loader.load()
-```
-
-### 2. Data Validator (`src/validators.py`)
-Run comprehensive validation checks:
-```python
-from src import DataValidator
-
-validator = DataValidator(df, config_path="config/rules.json")
-issues = validator.run_all_validations()
-
-# Or run specific checks
-validator.check_missing_values_column()
-validator.check_duplicates(key_columns=['id'])
-validator.check_date_formats(date_columns=['created_at'])
-validator.check_outliers()
-```
-
-### 3. Risk Engine (`src/risk_engine.py`)
-Calculate data quality risk:
-```python
-from src import RiskEngine
-
-risk_engine = RiskEngine()
-risk_score = risk_engine.calculate_risk(issues, df)
-
-print(f"Risk Level: {risk_score.risk_level}")  # LOW, MEDIUM, HIGH, CRITICAL
-print(f"Risk Score: {risk_score.total_score}/100")
-print(risk_score.recommendations)
-```
-
-### 4. Report Generator (`src/report_generator.py`)
-Generate beautiful reports:
-```python
-from src import ReportGenerator
-
-reporter = ReportGenerator(df, issues, risk_score)
-
-# Generate specific report types
-reporter.generate_csv_report()
-reporter.generate_excel_report()
-reporter.generate_html_report()  # Opens in browser
-reporter.print_console_summary()
-
-# Or generate all at once
-reporter.generate_all_reports(output_dir="outputs")
-```
-
-### 5. Streamlit App (Classic EDA)
-```python
-from main import AutomatedEDA
-
-eda = AutomatedEDA(data_source="data.csv", source_type="csv")
-df = eda.load_data()
-eda.basic_stats()
-eda.data_quality_check()
-eda.visualize(save_plots=True)
-eda.export_summary(excel_path="report.xlsx")
-```
-
-## 📊 Report Outputs
-
-### Validation Reports Include:
-
-#### 1. **CSV Report** (`validation_report.csv`)
-Simple tabular format with all issues
-
-#### 2. **Excel Report** (`validation_report.xlsx`)
-Multi-sheet workbook:
-- **Summary**: Overview of dataset and issues
-- **Issues**: Detailed list of all problems found
-- **Data Overview**: Column-by-column analysis
-- **Recommendations**: Prioritized action items
-
-#### 3. **HTML Report** (`validation_report.html`)
-Beautiful, styled report with:
-- Visual metrics dashboard
-- Color-coded severity levels
-- Interactive tables
-- Risk assessment summary
-
-#### 4. **Risk Summary** (`risk_summary.txt`)
-Text-based risk assessment with:
-- Overall risk score and level
-- Issue breakdown by severity
-- Detailed recommendations
-- Full issue listing
-
-### Classic EDA Report (Streamlit/main.py):
-1. **Numeric_Summary**: Descriptive statistics
-2. **[Column]_Counts**: Value counts for categorical columns
-3. **Missing_Values**: Missing data analysis
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-**Issue**: `streamlit: command not found`
-- **Solution**: Make sure your virtual environment is activated and streamlit is installed
-
-**Issue**: `ModuleNotFoundError: No module named 'pandas'`
-- **Solution**: Install required packages: `pip install -r requirements.txt`
-
-**Issue**: `ValueError: Invalid character found in sheet title`
-- **Solution**: This is handled automatically - column names with special characters are sanitized
-
-**Issue**: Python 3.14 compatibility errors with certain packages
-- **Solution**: Use Python 3.13 instead (recommended version)
-
-**Issue**: PyArrow build errors during installation
-- **Solution**: Python 3.13 is recommended for better package compatibility
-
-## 🎨 Customization
-
-You can easily customize the tool by modifying:
-
-- **`app.py`**: Change the UI, add new visualizations, modify layout
-- **`main.py`**: Add new analysis methods, modify export format
-- **Colors**: Change the heatmap colormap in `app.py` line 54 (`cmap='coolwarm'`)
-- **Metrics**: Add custom metrics to the dataset overview section
-
-## 💡 Usage Examples
-
-### Example 1: Quick Validation
-```bash
-# Validate any CSV file
-python run_validation.py sales_data.csv
-
-# Validate Excel file
-python run_validation.py customer_data.xlsx excel
-```
-
-### Example 2: Custom Validation with Python
-```python
-from src import DataLoader, DataValidator, RiskEngine, ReportGenerator
-
-# Load data
-loader = DataLoader("sales_data.csv", source_type="csv")
-df = loader.load()
-
-# Run specific validations
-validator = DataValidator(df)
-validator.check_missing_values_column()
-validator.check_duplicates(key_columns=['order_id'])
-validator.check_value_ranges({'age': {'min': 0, 'max': 120}})
-
-# Get issues
-issues = validator.issues
-
-# Calculate risk
-risk_engine = RiskEngine()
-risk_score = risk_engine.calculate_risk(issues, df)
-
-# Generate reports
-reporter = ReportGenerator(df, issues, risk_score)
-reporter.generate_html_report()  # Beautiful HTML report
-```
-
-### Example 3: Classic EDA with Streamlit
-```python
-from main import AutomatedEDA
-
-eda = AutomatedEDA(data_source="sales_data.csv", source_type="csv")
-df = eda.load_data()
-eda.basic_stats()
-eda.data_quality_check()
-eda.visualize(save_plots=True)
-eda.export_summary(excel_path="sales_analysis.xlsx")
-```
-
-### Example 4: Integrate with SQL
-```python
-from src import DataLoader
-
-conn_str = "postgresql://user:password@localhost:5432/mydb"
-loader = DataLoader("customers", source_type="sql", 
-                   sql_connection_string=conn_str)
-df = loader.load()
-
-# Then run validations as usual...
-```
-
-## 🎨 Configuration
-
-Edit `config/rules.json` to customize validation rules:
+Want to change what gets checked? Edit `config/rules.json`:
 
 ```json
 {
-  "critical_columns": ["id", "email"],
-  "required_columns": ["name", "created_at"],
-  "risk_weights": {
-    "missing_critical_id": {
-      "severity": "HIGH",
-      "points": 5
-    },
-    "duplicate_primary_key": {
-      "severity": "HIGH",
-      "points": 5
-    }
-  },
+  "required_columns": ["id", "name", "email"],
   "thresholds": {
     "missing_percent_high": 30,
-    "missing_percent_medium": 10,
     "outlier_std_dev": 3
   }
 }
 ```
 
-## 📝 Future Enhancements
-
-- [x] Comprehensive data validation engine
-- [x] Risk scoring and assessment
-- [x] Multiple report formats (CSV, Excel, HTML)
-- [x] Configurable validation rules
-- [ ] Add validation to Streamlit interface
-- [ ] Support for more file formats (JSON, Parquet, TSV)
-- [ ] Interactive data filtering
-- [ ] Time series validation
-- [ ] Data profiling with pandas-profiling
-- [ ] PDF report generation
-- [ ] Data comparison (before/after)
-- [ ] Automated data cleaning suggestions
-- [ ] Machine learning readiness checks
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to:
-
-- Report bugs
-- Suggest new features
-- Submit pull requests
-- Improve documentation
-
-## 📄 License
-
-This project is open source and available under the MIT License.
-
-## 👤 Author
-
-Created as a Python data analysis automation tool for quick and efficient exploratory data analysis.
-
-## 🙏 Acknowledgments
-
-- Built with [Streamlit](https://streamlit.io/)
-- Data analysis powered by [Pandas](https://pandas.pydata.org/)
-- Visualizations using [Matplotlib](https://matplotlib.org/) and [Seaborn](https://seaborn.pydata.org/)
-- Statistical computing with [NumPy](https://numpy.org/)
-
-## 📚 Resources
-
-- [Streamlit Documentation](https://docs.streamlit.io/)
-- [Pandas Documentation](https://pandas.pydata.org/docs/)
-- [Python Data Science Handbook](https://jakevdp.github.io/PythonDataScienceHandbook/)
+This lets you:
+- Specify which columns must exist
+- Set your own thresholds for problems
+- Adjust severity levels
 
 ---
 
-**Note**: This tool is designed for quick exploratory data analysis. For production-grade analysis, consider additional validation, testing, and data governance practices.
+## Common Questions
 
-## 🎓 What You'll Learn
+**Q: Do I need to know Python?**  
+A: Nope! Just run the web app and upload your file.
 
-This project demonstrates:
-- Clean, maintainable Python code structure
-- Modular design with reusable components
-- Data validation best practices
-- Risk assessment methodologies
-- Report generation in multiple formats
-- Configuration-driven validation
-- Simple but effective data classes with `@dataclass`
+**Q: What file formats work?**  
+A: CSV and Excel (.xlsx) files.
 
-**Version**: 1.0.0  
-**Last Updated**: January 2026
+**Q: Can I check multiple files?**  
+A: Currently one at a time. Multi-file support coming soon!
 
-## ❓ FAQ
+**Q: Is my data safe?**  
+A: Yes! Everything runs on your computer. Nothing is uploaded anywhere.
 
-**Q: Which approach should I use - Streamlit or validation pipeline?**
-A: Use Streamlit for quick interactive EDA. Use validation pipeline for comprehensive data quality assessment before critical analysis.
+**Q: How big can my data be?**  
+A: Tested with files up to 1 million rows. Larger files may be slower.
 
-**Q: Can I use both together?**
-A: Absolutely! They complement each other. Use validation pipeline first to assess quality, then Streamlit for visual exploration.
+**Q: What's the difference between severity and risk score?**  
+A: Severity (HIGH/MEDIUM/LOW) describes each individual issue. Risk score (0-100) is your overall data quality.
 
-**Q: How do I customize validation rules?**
-A: Edit `config/rules.json` to set thresholds, add required columns, and adjust risk weights.
+---
 
-**Q: What's the difference between severity and risk score?**
-A: Severity (HIGH/MEDIUM/LOW) is per-issue. Risk score (0-100) is overall dataset quality based on all issues combined.
+## Troubleshooting
+
+**Problem: "streamlit: command not found"**  
+→ Make sure you installed everything: `pip install -r requirements.txt`
+
+**Problem: "ModuleNotFoundError"**  
+→ You're missing a package. Run: `pip install -r requirements.txt`
+
+**Problem: My file won't upload**  
+→ Make sure it's a .csv or .xlsx file and not corrupted
+
+**Problem: The app is slow**  
+→ Large files take longer. Try with a smaller sample first.
+
+---
+
+## What's Next?
+
+DataQA is actively being improved. Coming soon:
+- 📁 Multi-file comparison
+- 🗄️ Direct database connections
+- 📊 Advanced visualizations
+- 🤖 Auto-fix suggestions
+- 📧 Email alerts
+
+---
+
+## Need Help?
+
+Found a bug? Have a suggestion? Want to contribute?  
+Open an issue on GitHub or reach out!
+
+---
+
+## Credits
+
+Built with:
+- [Streamlit](https://streamlit.io/) - Web interface
+- [Pandas](https://pandas.pydata.org/) - Data analysis
+- [Matplotlib](https://matplotlib.org/) & [Seaborn](https://seaborn.pydata.org/) - Charts
+
+---
+
+**Version 1.0** • Updated January 2026
+
+*DataQA - Because clean data leads to better decisions.*
