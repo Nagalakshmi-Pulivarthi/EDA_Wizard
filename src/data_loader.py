@@ -1,32 +1,31 @@
 # data_loader.py
-# Module for loading data from various sources (CSV, Excel, SQL)
+# Loads data from different file types (CSV, Excel, SQL)
+# Handles the messy parts of reading files so you don't have to
 
 import pandas as pd
 from sqlalchemy import create_engine
-from typing import Optional, Dict, Any
 import os
 
 
 class DataLoader:
     """
-    Simple data loader that handles CSV, Excel, and SQL sources
+    This class handles loading data from different sources
+    Makes it easy to read CSV, Excel, or SQL databases
     """
     
-    def __init__(self, source_path: str, source_type: str = 'csv', **kwargs):
+    def __init__(self, source_path, source_type='csv', **kwargs):
         """
-        Initialize data loader
-        
-        Args:
-            source_path: Path to file or SQL table name
-            source_type: One of 'csv', 'excel', 'sql'
-            **kwargs: Additional arguments (sql_connection_string, sheet_name, etc.)
+        Set up the data loader
+        source_path: Path to your file (or table name if SQL)
+        source_type: 'csv', 'excel', or 'sql'
+        kwargs: Any extra options (like which Excel sheet to read)
         """
         self.source_path = source_path
         self.source_type = source_type.lower()
         self.kwargs = kwargs
-        self.df = None
+        self.df = None  # Will store the dataframe once we load it
     
-    def load(self) -> pd.DataFrame:
+    def load(self):
         """
         Load data from the specified source
         
@@ -47,56 +46,70 @@ class DataLoader:
         print(f"✅ Data loaded successfully! Shape: {self.df.shape}")
         return self.df
     
-    def _load_csv(self) -> pd.DataFrame:
-        """Load data from CSV file"""
+    def _load_csv(self):
+        """
+        Load a CSV file into a pandas DataFrame
+        Handles encoding issues automatically
+        """
+        # Check if the file exists first
         if not os.path.exists(self.source_path):
-            raise FileNotFoundError(f"CSV file not found: {self.source_path}")
+            raise FileNotFoundError(f"Can't find CSV file: {self.source_path}")
         
-        # Get optional parameters
+        # Get optional parameters (encoding and separator)
         encoding = self.kwargs.get('encoding', 'utf-8')
         sep = self.kwargs.get('sep', ',')
         
         try:
+            # Try to load with UTF-8 encoding (most common)
             df = pd.read_csv(self.source_path, encoding=encoding, sep=sep)
         except UnicodeDecodeError:
-            # Try different encoding if UTF-8 fails
-            print("UTF-8 encoding failed, trying 'latin-1'...")
+            # If UTF-8 doesn't work, try latin-1 (handles special characters)
+            print("UTF-8 didn't work, trying 'latin-1' encoding instead...")
             df = pd.read_csv(self.source_path, encoding='latin-1', sep=sep)
         
         return df
     
-    def _load_excel(self) -> pd.DataFrame:
-        """Load data from Excel file"""
+    def _load_excel(self):
+        """
+        Load an Excel file into a pandas DataFrame
+        Can specify which sheet to read
+        """
+        # Check if the file exists
         if not os.path.exists(self.source_path):
-            raise FileNotFoundError(f"Excel file not found: {self.source_path}")
+            raise FileNotFoundError(f"Can't find Excel file: {self.source_path}")
         
-        # Get optional parameters
-        sheet_name = self.kwargs.get('sheet_name', 0)  # Default to first sheet
+        # Which sheet do we want? Default to the first one (0)
+        sheet_name = self.kwargs.get('sheet_name', 0)
         
         df = pd.read_excel(self.source_path, sheet_name=sheet_name)
         return df
     
-    def _load_sql(self) -> pd.DataFrame:
-        """Load data from SQL database"""
+    def _load_sql(self):
+        """
+        Load data from a SQL database
+        Can either read a whole table or run a custom SQL query
+        """
+        # We need a connection string to connect to the database
         sql_connection_string = self.kwargs.get('sql_connection_string')
         
         if not sql_connection_string:
-            raise ValueError("sql_connection_string is required for SQL source type")
+            raise ValueError("You need to provide a sql_connection_string to load from SQL")
         
         try:
+            # Create a database connection
             engine = create_engine(sql_connection_string)
             
-            # Check if source_path is a table name or SQL query
+            # Check if source_path is a SQL query or just a table name
             if self.source_path.strip().upper().startswith('SELECT'):
-                # It's a SQL query
+                # It's a SQL query, run it
                 df = pd.read_sql_query(self.source_path, engine)
             else:
-                # It's a table name
+                # It's a table name, read the whole table
                 df = pd.read_sql_table(self.source_path, engine)
             
             return df
         except Exception as e:
-            raise Exception(f"Failed to load data from SQL: {str(e)}")
+            raise Exception(f"Failed to load from SQL database: {str(e)}")
     
     def get_info(self) -> Dict[str, Any]:
         """
@@ -119,38 +132,47 @@ class DataLoader:
         
         return info
     
-    def save_to_csv(self, output_path: str, index: bool = False):
-        """Save the loaded data to a CSV file"""
+    def save_to_csv(self, output_path, index=False):
+        """
+        Save the dataframe to a CSV file
+        Useful after cleaning the data
+        """
         if self.df is None:
-            raise ValueError("No data loaded. Call load() first.")
+            raise ValueError("No data loaded yet. Call load() first.")
         
         self.df.to_csv(output_path, index=index)
-        print(f"Data saved to {output_path}")
+        print(f"✅ Saved to {output_path}")
     
-    def save_to_excel(self, output_path: str, sheet_name: str = 'Sheet1', index: bool = False):
-        """Save the loaded data to an Excel file"""
+    def save_to_excel(self, output_path, sheet_name='Sheet1', index=False):
+        """
+        Save the dataframe to an Excel file
+        Can specify which sheet name to use
+        """
         if self.df is None:
-            raise ValueError("No data loaded. Call load() first.")
+            raise ValueError("No data loaded yet. Call load() first.")
         
         self.df.to_excel(output_path, sheet_name=sheet_name, index=index)
-        print(f"Data saved to {output_path}")
+        print(f"✅ Saved to {output_path}")
 
 
-# Example usage
+# You can run this file directly to test the data loader
 if __name__ == "__main__":
-    # Example 1: Load CSV
+    # Example 1: Loading a CSV file
+    print("Loading CSV file...")
     loader = DataLoader("sample_data.csv", source_type="csv")
     df = loader.load()
     print(loader.get_info())
     
-    # Example 2: Load Excel with specific sheet
+    # Example 2: Loading Excel with a specific sheet
+    # Uncomment to try:
     # loader = DataLoader("data.xlsx", source_type="excel", sheet_name="Sales")
     # df = loader.load()
     
-    # Example 3: Load from SQL
+    # Example 3: Loading from a SQL database
+    # Uncomment and add your database connection string:
     # loader = DataLoader(
-    #     "users",
+    #     "users",  # Table name
     #     source_type="sql",
-    #     sql_connection_string="postgresql://user:pass@localhost/db"
+    #     sql_connection_string="postgresql://user:password@localhost/mydatabase"
     # )
     # df = loader.load()
