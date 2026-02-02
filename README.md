@@ -66,13 +66,13 @@ The tool successfully detected all the problems I introduced, plus a few I didn'
 
 When you upload a file, you'll see something like this:
 
-![Dashboard Preview](screenshots/dashboard_full.png)
+![Dashboard Preview](screenshots/Dashboard_screeshot.png)
 *The main dashboard showing a risk score of 97/100 - this data needs serious cleanup*
 
-![Interactive Charts](screenshots/charts_overview.png)
+![Interactive Charts](screenshots/IssuesAnalysi_screenshot.png)
 *Three interactive charts showing where the issues are concentrated*
 
-![Detailed Table](screenshots/detailed_table.png)
+![Detailed Table](screenshots/Detailed_table_screenshot.png)
 *Every issue listed with color-coded severity levels*
 
 ### Real Test Example
