@@ -39,7 +39,7 @@ Here's what happens when you upload a file:
 
 ## Real Example
 
-I tested this on an Amazon laptops dataset. Here's what happened:
+I tested this on messy datasets I found on Kaggle. Here's what happened:
 
 **Original data:** 209 rows, looked okay at first glance
 - DataQA found 15 issues
@@ -49,6 +49,10 @@ I tested this on an Amazon laptops dataset. Here's what happened:
 - Added missing values, duplicates, invalid formats, etc.
 - DataQA caught everything
 - Risk score jumped to 97/100 (CRITICAL - don't touch this data!)
+
+**Also tested on a 100K row dataset:**
+- Original: 12 issues, 40/100 (MEDIUM)
+- Corrupted version: 19 issues, 79/100 (CRITICAL)
 
 The tool successfully detected all the problems I introduced, plus a few I didn't even realize were there.
 
@@ -181,13 +185,14 @@ EDA_Automation/
 
 ---## Test Results
 
-I tested DataQA on real datasets to see how well it catches problems:
+I tested DataQA on real messy datasets from Kaggle to see how well it catches problems:
 
 | Dataset | Rows | Issues Found | Risk Score | Processing Time |
 |---------|------|--------------|------------|----------------|
 | Amazon Laptops (original) | 209 | 15 | 66/100 (HIGH) | < 1 second |
 | Amazon Laptops (corrupted) | 232 | 18 | 97/100 (CRITICAL) | < 1 second |
-| Indian Toy Sales | 100,000 | 12 | 40/100 (MEDIUM) | ~3 seconds |
+| Indian Toy Sales (original) | 100,000 | 12 | 40/100 (MEDIUM) | ~3 seconds |
+| Indian Toy Sales (corrupted) | 100,030 | 19 | 79/100 (CRITICAL) | ~3 seconds |
 
 The tool successfully caught everything I threw at it - missing values, duplicates, invalid data types, format issues, outliers, negative prices, and more.
 
@@ -230,18 +235,6 @@ This lets you specify which columns must exist and adjust the thresholds for wha
 - Pandas (for data analysis)
 - Plotly (for interactive charts)
 - Matplotlib & Seaborn (for visualizations)
-
----
-
-## Future Ideas
-
-Some things I'm thinking about adding:
-- More validation checks (consistency rules, referential integrity, etc.)
-- Support for databases (not just CSV/Excel)
-- API endpoint for programmatic access
-- Scheduled checks (run validation automatically on a schedule)
-
-If you have ideas, let me know!
 
 ---
 
