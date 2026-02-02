@@ -41,18 +41,22 @@ Here's what happens when you upload a file:
 
 I tested this on messy datasets I found on Kaggle. Here's what happened:
 
-**Original data:** 209 rows, looked okay at first glance
-- DataQA found 15 issues
-- Risk score: 66/100 (HIGH risk)
+**Test 1: Amazon Laptops (small dataset)**
+- Original: 209 rows, 15 issues, 66/100 (HIGH risk)
+- Corrupted: 232 rows, 18 issues, **97/100 (CRITICAL)** 🔴
 
-**Then I deliberately corrupted it** to stress-test the tool:
-- Added missing values, duplicates, invalid formats, etc.
-- DataQA caught everything
-- Risk score jumped to 97/100 (CRITICAL - don't touch this data!)
+**Test 2: Indian Toy Sales (large dataset)**
+- Original: 100,000 rows, 12 issues, 40/100 (MEDIUM)
+- Corrupted: 100,030 rows, 19 issues, **79/100 (CRITICAL)** 🔴
 
-**Also tested on a 100K row dataset:**
-- Original: 12 issues, 40/100 (MEDIUM)
-- Corrupted version: 19 issues, 79/100 (CRITICAL)
+| Dataset | Rows | Issues | Risk Score |
+|---------|------|--------|------------|
+| Amazon Laptops (clean-ish) | 209 | 15 | 66/100 |
+| Amazon Laptops (corrupted) | 232 | 18 | **97/100** |
+| Indian Toy Sales (original) | 100,000 | 12 | 40/100 |
+| Indian Toy Sales (corrupted) | 100,030 | 19 | **79/100** |
+
+I deliberately corrupted both datasets by adding missing values, duplicates, invalid formats, outliers, and inconsistent data. DataQA caught everything - from small 200-row files to massive 100K+ datasets.
 
 The tool successfully detected all the problems I introduced, plus a few I didn't even realize were there.
 
