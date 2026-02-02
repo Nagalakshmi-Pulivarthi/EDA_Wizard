@@ -1,6 +1,6 @@
 # DataQA - Data Quality Assessment Tool
 
-A Python tool that checks datasets for common quality issues and provides a risk score to assess data readiness before analysis.
+A Python tool for automated data quality validation and exploratory data analysis (EDA). Checks datasets for common quality issues and provides a risk score to assess data readiness before analysis.
 
 ---
 
@@ -25,6 +25,7 @@ Each issue is classified by severity (HIGH, MEDIUM, LOW) and combined into a ris
 - Interactive web dashboard with Streamlit
 - Risk score calculation (0-100 scale)
 - Visual charts showing issue distribution by severity, column, and type
+- Exploratory data analysis with summary statistics and correlation heatmaps
 - Exports to Excel, HTML, and CSV
 - Handles datasets from 200 to 100K+ rows
 
