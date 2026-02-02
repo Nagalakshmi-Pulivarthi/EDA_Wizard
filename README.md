@@ -6,7 +6,7 @@ A Python tool for automated data quality validation and exploratory data analysi
 
 ## What It Does
 
-DataQA validates datasets by checking for:
+DataQA validates datasets by checking for 8 common problems:
 - Missing values
 - Duplicate records
 - Invalid data types
@@ -18,62 +18,12 @@ DataQA validates datasets by checking for:
 
 Each issue is classified by severity (HIGH, MEDIUM, LOW) and combined into a risk score from 0-100.
 
----
-
-## Features
-
-- Interactive web dashboard with Streamlit
-- Risk score calculation (0-100 scale)
-- Visual charts showing issue distribution by severity, column, and type
-- Exploratory data analysis with summary statistics and correlation heatmaps
-- Exports to Excel, HTML, and CSV
-- Handles datasets from 200 to 100K+ rows
-
----
-
-## What It Actually Does
-
-Here's what happens when you upload a file:
-
-**The tool checks 8 common problems:**
-- Missing values (the silent killer)
-- Duplicate rows (why is everything doubled?)
-- Wrong data types (why is "price" stored as text?)
-- Weird date formats
-- Outliers that don't make sense
-- Columns that shouldn't be there
-- Values that are out of reasonable ranges
-- Those annoying "Unnamed" columns
-
-**Then it gives you:**
-- A risk score (0-100, where 0 is perfect)
-- A color-coded severity level (green/yellow/orange/red)
-- Interactive charts showing where the problems are
-- A detailed list of every issue found
-- Recommendations on what to fix first
-
----
-
-## Validation Results
-
-Testing was conducted on real-world datasets from Kaggle to validate detection accuracy:
-
-**Small Dataset: Amazon Laptops (Web-Scraped Data)**
-- Original: 209 rows, 15 issues detected, Risk Score: 66/100 (HIGH)
-- Corrupted: 232 rows, 18 issues detected, Risk Score: 97/100 (CRITICAL)
-
-**Large Dataset: Indian Toy Sales (Retail Data)**
-- Original: 100,000 rows, 12 issues detected, Risk Score: 40/100 (MEDIUM)
-- Corrupted: 100,030 rows, 19 issues detected, Risk Score: 79/100 (CRITICAL)
-
-| Dataset | Rows | Issues | Risk Score | Status |
-|---------|------|--------|------------|--------|
-| Amazon Laptops (original) | 209 | 15 | 66/100 | HIGH |
-| Amazon Laptops (corrupted) | 232 | 18 | 97/100 | CRITICAL |
-| Indian Toy Sales (original) | 100,000 | 12 | 40/100 | MEDIUM |
-| Indian Toy Sales (corrupted) | 100,030 | 19 | 79/100 | CRITICAL |
-
-Corrupted datasets included missing values (30%+), duplicate records (20%+), invalid data types, format inconsistencies, statistical outliers, and constraint violations. All issues were successfully detected with appropriate severity classification.
+**You get:**
+- Risk score (0-100 scale)
+- Color-coded severity levels
+- Interactive charts showing where problems are
+- Detailed list of every issue
+- Export reports in Excel, HTML, and CSV
 
 ---
 
