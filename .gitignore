@@ -5,6 +5,11 @@ tests/
 *.csv
 !config/*.csv
 
+# Helper/Template Files (Personal Use Only)
+LAUNCH_CHECKLIST.md
+LINKEDIN_POST_TEMPLATES.md
+screenshots/README_SCREENSHOTS_GUIDE.md
+
 # Python
 __pycache__/
 *.py[cod]
