@@ -5,6 +5,7 @@ from .data_loader import DataLoader
 from .validators import DataValidator, Issue
 from .risk_engine import RiskEngine, RiskScore
 from .report_generator import ReportGenerator
+from .main import AutomatedEDA
 
 __all__ = [
     'DataLoader',
@@ -12,7 +13,8 @@ __all__ = [
     'Issue',
     'RiskEngine',
     'RiskScore',
-    'ReportGenerator'
+    'ReportGenerator',
+    'AutomatedEDA'
 ]
 
 __version__ = '1.0.0'

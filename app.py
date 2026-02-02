@@ -1,6 +1,6 @@
 # app.py
 import streamlit as st
-from main import AutomatedEDA
+from src.main import AutomatedEDA
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -112,13 +112,32 @@ def create_interactive_plotly_charts(issues, risk_score):
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                # Severity bar chart
+                # Severity bar chart with column annotations
                 severity_order = ['HIGH', 'MEDIUM', 'LOW']
                 severity_colors_map = {'HIGH': '#e74c3c', 'MEDIUM': '#f39c12', 'LOW': '#3498db'}
+                
+                # Get columns for each severity level
+                severity_columns = {}
+                for severity in severity_order:
+                    severity_columns[severity] = set()
+                
+                for issue in issues:
+                    col_name = issue.column if issue.column else 'General'
+                    severity_columns[issue.severity].add(col_name)
                 
                 severities = [s for s in severity_order if s in severity_counts]
                 counts = [severity_counts[s] for s in severities]
                 colors = [severity_colors_map[s] for s in severities]
+                
+                # Create hover text with column names
+                hover_texts = []
+                for sev in severities:
+                    cols = list(severity_columns[sev])
+                    cols_text = ', '.join(cols[:5])  # Show first 5 columns
+                    if len(cols) > 5:
+                        cols_text += f" (+{len(cols)-5} more)"
+                    hover_text = f"<b>{sev}</b><br>Count: {severity_counts[sev]}<br>Columns: {cols_text}"
+                    hover_texts.append(hover_text)
                 
                 fig_severity = go.Figure(data=[
                     go.Bar(
@@ -127,9 +146,37 @@ def create_interactive_plotly_charts(issues, risk_score):
                         marker_color=colors,
                         text=counts,
                         textposition='auto',
-                        hovertemplate='<b>%{x}</b><br>Count: %{y}<extra></extra>'
+                        hovertemplate='%{customdata}<extra></extra>',
+                        customdata=hover_texts
                     )
                 ])
+                
+                # Add text annotations for HIGH severity columns
+                if 'HIGH' in severities:
+                    high_idx = severities.index('HIGH')
+                    high_cols = list(severity_columns['HIGH'])
+                    cols_label = ', '.join(high_cols[:3])  # Show first 3 columns
+                    if len(high_cols) > 3:
+                        cols_label += f" (+{len(high_cols)-3})"
+                    
+                    fig_severity.add_annotation(
+                        x=high_idx,
+                        y=counts[high_idx],
+                        text=f"<b>{cols_label}</b>",
+                        showarrow=True,
+                        arrowhead=2,
+                        arrowsize=1,
+                        arrowwidth=2,
+                        arrowcolor="#e74c3c",
+                        ax=40,
+                        ay=-40,
+                        font=dict(size=10, color="#e74c3c"),
+                        bgcolor="white",
+                        bordercolor="#e74c3c",
+                        borderwidth=1,
+                        borderpad=4
+                    )
+                
                 fig_severity.update_layout(
                     title="Issues by Severity",
                     xaxis_title="Severity Level",

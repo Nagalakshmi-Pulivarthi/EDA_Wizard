@@ -1,8 +1,9 @@
-# Test/sample data files
+# Test folder (sample datasets & results)
+tests/
+
+# Sample data files
 *.csv
 !config/*.csv
-sample_data.csv
-test_data.csv
 
 # Python
 __pycache__/
