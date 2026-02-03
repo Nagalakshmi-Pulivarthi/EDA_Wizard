@@ -1,12 +1,11 @@
 # app.py
 import streamlit as st
-from src.main import AutomatedEDA
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
-from src.validators import DataValidator
-from src.risk_engine import RiskEngine
-from src.report_generator import ReportGenerator
+from validators import DataValidator
+from risk_calculator import RiskCalculator
+from report_generator import ReportGenerator
 import os
 
 # Import Plotly for interactive charts
@@ -308,22 +307,19 @@ st.title("DataQA (Quality Assurance) Tool")
 uploaded_file = st.file_uploader("Upload CSV or Excel file", type=["csv","xlsx"])
 
 if uploaded_file:
-    source_type = "csv" if uploaded_file.name.endswith(".csv") else "excel"
-    
-    # Save and load data
-    with open(f"temp_{uploaded_file.name}", "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    
-    eda = AutomatedEDA(data_source=f"temp_{uploaded_file.name}", source_type=source_type)
-    df = eda.load_data()
+    # Load the data
+    if uploaded_file.name.endswith(".csv"):
+        df = pd.read_csv(uploaded_file)
+    else:
+        df = pd.read_excel(uploaded_file)
     
     # Run validations
     validator = DataValidator(df)
     issues = validator.run_all_validations()
     
     # Calculate risk
-    risk_engine = RiskEngine()
-    risk_score = risk_engine.calculate_risk(issues, df)
+    risk_calculator = RiskCalculator()
+    risk_score = risk_calculator.calculate_risk(issues, df)
 
     # Dataset overview
     st.subheader("Dataset Overview")
@@ -443,16 +439,9 @@ if uploaded_file:
     # Export
     st.subheader("Export Report")
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("Generate Excel Report"):
-            eda.export_summary(excel_path="EDA_Summary.xlsx")
-            st.success("Excel report saved: EDA_Summary.xlsx")
-            with open("EDA_Summary.xlsx", "rb") as f:
-                st.download_button("Download Excel Report", f, "EDA_Summary.xlsx")
-    
-    with col2:
         if st.button("Generate Full Validation Report"):
             # Create outputs directory if it doesn't exist
             os.makedirs("outputs", exist_ok=True)
@@ -462,7 +451,7 @@ if uploaded_file:
             reporter.generate_all_reports(output_dir="outputs")
             
             # Save risk summary
-            risk_engine.export_risk_summary(risk_score, issues, "outputs/risk_summary.txt")
+            risk_calculator.export_risk_summary(risk_score, issues, "outputs/risk_summary.txt")
             
             st.success("Validation reports generated!")
             
@@ -473,7 +462,7 @@ if uploaded_file:
             with open("outputs/risk_summary.txt", "rb") as f:
                 st.download_button("Download Risk Summary", f, "risk_summary.txt", mime="text/plain")
     
-    with col3:
+    with col2:
         if st.button("Export Interactive Dashboard"):
             # Create outputs directory if it doesn't exist
             os.makedirs("outputs", exist_ok=True)
